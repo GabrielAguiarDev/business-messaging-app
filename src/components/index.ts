@@ -2,6 +2,7 @@ export * from './Avatar/Avatar';
 export * from './Badge/Badge';
 export * from './BottomSheet/BottomSheet';
 export * from './Box/Box';
+export * from './ContextMenu/ContextMenu';
 export * from './Button/Button';
 export * from './EmptyState/EmptyState';
 export * from './ErrorState/ErrorState';

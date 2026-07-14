@@ -7,13 +7,23 @@ import {
   KeyboardAvoidingView,
   ListRenderItemInfo,
   Platform,
+  View,
 } from 'react-native';
 
 import Clipboard from '@react-native-clipboard/clipboard';
 import {GestureDetector, useTapGesture} from 'react-native-gesture-handler';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {Avatar, Box, IconButton, Text, TouchableOpacityBox} from '@components';
+import {
+  AnchorFrame,
+  Avatar,
+  Box,
+  ContextMenu,
+  IconButton,
+  MenuItemSpec,
+  Text,
+  TouchableOpacityBox,
+} from '@components';
 import {
   Chat,
   Message,
@@ -31,7 +41,6 @@ import {AppStackScreenProps} from '@routes';
 import {toastService} from '@services';
 
 import {AttendanceBanner} from './components/AttendanceBanner';
-import {ChatMenuSheet} from './components/ChatMenuSheet';
 import {Composer} from './components/Composer';
 import {
   MessageActionsOverlay,
@@ -46,11 +55,14 @@ export function ChatScreen({
   const {chatId} = route.params;
   const insets = useSafeAreaInsets();
   const [draft, setDraft] = useState('');
-  const [menuVisible, setMenuVisible] = useState(false);
+  const [headerMenuAnchor, setHeaderMenuAnchor] = useState<AnchorFrame | null>(
+    null,
+  );
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const [actionsTarget, setActionsTarget] =
     useState<MessageActionsTarget | null>(null);
   const listRef = useRef<FlatList<Message>>(null);
+  const menuButtonRef = useRef<View>(null);
 
   const {chat} = useChatDetails(chatId);
   const {messages} = useChatMessages(chatId);
@@ -138,6 +150,55 @@ export function ChatScreen({
     sendMessage({chatId, image: {uri}, replyTo: replyRef});
     setReplyingTo(null);
   }
+
+  /** Botão ⋯ do header → menu de contexto ancorado nele (estilo WhatsApp). */
+  function openHeaderMenu() {
+    Keyboard.dismiss();
+    menuButtonRef.current?.measureInWindow((x, y, width, height) =>
+      setHeaderMenuAnchor({x, y, width, height}),
+    );
+  }
+
+  /** Fecha o menu do header e executa a ação escolhida. */
+  function headerMenuAction(action: () => void) {
+    return () => {
+      setHeaderMenuAnchor(null);
+      action();
+    };
+  }
+
+  const headerMenuItems: MenuItemSpec[] = chat
+    ? [
+        {
+          icon: 'person',
+          label: 'Ver perfil',
+          onPress: headerMenuAction(() =>
+            navigation.navigate('ChatProfileScreen', {chatId}),
+          ),
+        },
+        {
+          icon: chat.muted ? 'bell' : 'bellOff',
+          label: chat.muted
+            ? 'Reativar notificações'
+            : 'Silenciar notificações',
+          onPress: headerMenuAction(() => setMuted(chatId, !chat.muted)),
+        },
+        {
+          icon: 'search',
+          label: 'Buscar na conversa',
+          onPress: headerMenuAction(() =>
+            toastService.show('Disponível em breve.'),
+          ),
+        },
+        {
+          icon: 'trash',
+          label: 'Apagar conversa',
+          danger: true,
+          separated: true,
+          onPress: headerMenuAction(confirmDelete),
+        },
+      ]
+    : [];
 
   /** Long-press na bolha → abre o overlay de ações na posição medida. */
   function openMessageActions(message: Message, frame: BubbleFrame) {
@@ -256,7 +317,9 @@ export function ChatScreen({
               </Box>
             </TouchableOpacityBox>
           )}
-          <IconButton icon="dots" onPress={() => setMenuVisible(true)} />
+          <Box ref={menuButtonRef} collapsable={false}>
+            <IconButton icon="dots" onPress={openHeaderMenu} />
+          </Box>
         </Box>
 
         {/* Banner de atendimento */}
@@ -297,18 +360,12 @@ export function ChatScreen({
         />
       </KeyboardAvoidingView>
 
-      {chat && (
-        <ChatMenuSheet
-          visible={menuVisible}
-          onClose={() => setMenuVisible(false)}
-          chat={chat}
-          onViewProfile={() =>
-            navigation.navigate('ChatProfileScreen', {chatId})
-          }
-          onToggleMute={() => setMuted(chatId, !chat.muted)}
-          onDelete={confirmDelete}
-        />
-      )}
+      <ContextMenu
+        visible={!!headerMenuAnchor}
+        anchor={headerMenuAnchor}
+        items={headerMenuItems}
+        onClose={() => setHeaderMenuAnchor(null)}
+      />
 
       <MessageActionsOverlay
         target={actionsTarget}

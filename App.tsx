@@ -24,13 +24,15 @@ const queryClient = new QueryClient({
 
 function App() {
   const isDarkMode = useResolvedTheme() === 'dark';
+  const activeTheme = isDarkMode ? darkTheme : theme;
 
   return (
-    <GestureHandlerRootView style={$flex}>
+    <GestureHandlerRootView
+      style={[$flex, {backgroundColor: activeTheme.colors.background}]}>
       <AuthCredentialsProvider>
         <QueryClientProvider client={queryClient}>
           <SafeAreaProvider>
-            <ThemeProvider theme={isDarkMode ? darkTheme : theme}>
+            <ThemeProvider theme={activeTheme}>
               <BottomSheetModalProvider>
                 <StatusBar
                   barStyle={isDarkMode ? 'light-content' : 'dark-content'}

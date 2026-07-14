@@ -50,6 +50,11 @@ jest.mock('react-native-nitro-sound', () => ({
   },
 }));
 
+jest.mock('@react-native-community/blur', () => {
+  const {View} = require('react-native');
+  return {BlurView: View};
+});
+
 jest.mock('@react-native-clipboard/clipboard', () =>
   require('@react-native-clipboard/clipboard/jest/clipboard-mock.js'),
 );

@@ -1,11 +1,20 @@
 import React from 'react';
 
-import {Modal, Pressable, TextStyle, ViewStyle, useWindowDimensions} from 'react-native';
+import {Modal, TextStyle, useWindowDimensions} from 'react-native';
 
 import Animated, {FadeInDown, FadeInUp} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {Box, Icon, IconName, Text, TouchableOpacityBox} from '@components';
+import {
+  Box,
+  Icon,
+  IconName,
+  MenuBackdrop,
+  MenuCard,
+  MenuItemSpec,
+  Text,
+  TouchableOpacityBox,
+} from '@components';
 import {Message} from '@domain';
 
 import {MessageBubble} from './MessageBubble';
@@ -86,13 +95,7 @@ export function MessageActionsOverlay({
 
   const align = message.isMine ? 'flex-end' : 'flex-start';
 
-  const menuItems: Array<{
-    icon: IconName;
-    label: string;
-    danger?: boolean;
-    separated?: boolean;
-    onPress: () => void;
-  }> = [
+  const menuItems: MenuItemSpec[] = [
     {icon: 'reply', label: 'Responder', onPress: () => onReply(message)},
     {icon: 'forward', label: 'Encaminhar', onPress: () => onForward(message)},
     ...(canCopy
@@ -130,7 +133,7 @@ export function MessageActionsOverlay({
       statusBarTranslucent
       animationType="fade"
       onRequestClose={onClose}>
-      <Pressable style={$backdrop} onPress={onClose}>
+      <MenuBackdrop onPress={onClose}>
         <Box
           position="absolute"
           left={0}
@@ -190,59 +193,13 @@ export function MessageActionsOverlay({
 
           {/* Menu de ações */}
           <Animated.View entering={FadeInUp.duration(180)}>
-            <Box
-              width={250}
-              backgroundColor="card"
-              borderRadius="br16"
-              paddingVertical="s4"
-              shadowColor="text"
-              shadowOpacity={0.18}
-              shadowRadius={12}
-              shadowOffset={$shadowOffset}
-              elevation={8}
-              overflow="hidden">
-              {menuItems.map(item => (
-                <Box key={item.label}>
-                  {item.separated && (
-                    <Box
-                      height={1}
-                      backgroundColor="separator"
-                      marginVertical="s4"
-                    />
-                  )}
-                  <TouchableOpacityBox
-                    onPress={item.onPress}
-                    activeOpacity={0.6}
-                    flexDirection="row"
-                    alignItems="center"
-                    gap="s12"
-                    paddingHorizontal="s14"
-                    paddingVertical="s12">
-                    <Icon
-                      name={item.icon}
-                      size={19}
-                      color={item.danger ? 'danger' : 'text'}
-                    />
-                    <Text
-                      variant="paragraph"
-                      color={item.danger ? 'danger' : 'text'}>
-                      {item.label}
-                    </Text>
-                  </TouchableOpacityBox>
-                </Box>
-              ))}
-            </Box>
+            <MenuCard items={menuItems} />
           </Animated.View>
         </Box>
-      </Pressable>
+      </MenuBackdrop>
     </Modal>
   );
 }
-
-const $backdrop: ViewStyle = {
-  flex: 1,
-  backgroundColor: 'rgba(0,0,0,0.55)',
-};
 
 const $reactionEmoji: TextStyle = {
   fontSize: 24,

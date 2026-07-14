@@ -64,10 +64,6 @@ function AppTabs() {
   );
 }
 
-/**
- * Stack raiz do app logado: tabs na base e telas de detalhe por cima
- * (sem tab bar), como no design.
- */
 export function AppStack() {
   const {colors} = useAppTheme();
   return (
