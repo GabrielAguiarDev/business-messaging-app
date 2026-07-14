@@ -21,6 +21,15 @@ export interface ChatAPI {
   assigned_to?: string;
 }
 
+/** Referência a outra mensagem (responder deslizando, estilo WhatsApp). */
+export interface MessageReplyAPI {
+  message_id: string;
+  author_name: string;
+  /** Resumo pronto para exibição: texto da mensagem ou "🎤 Mensagem de voz"/"📷 Foto". */
+  preview: string;
+  kind: MessageKind;
+}
+
 export interface MessageAPI {
   id: string;
   kind: MessageKind;
@@ -36,6 +45,8 @@ export interface MessageAPI {
   audio_duration?: number;
   /** Só para kind 'image': uri local da foto capturada (sem backend real, ver ChatApi). */
   image_uri?: string;
+  /** Presente quando esta mensagem é uma resposta a outra. */
+  reply_to?: MessageReplyAPI;
 }
 
 // ── Domínio ───────────────────────────────────────────────────────
@@ -57,6 +68,15 @@ export interface Chat {
   assignedTo?: string;
 }
 
+/** Referência a outra mensagem (responder deslizando, estilo WhatsApp). */
+export interface MessageReply {
+  messageId: string;
+  authorName: string;
+  /** Resumo pronto para exibição: texto da mensagem ou "🎤 Mensagem de voz"/"📷 Foto". */
+  preview: string;
+  kind: MessageKind;
+}
+
 export interface Message {
   id: string;
   kind: MessageKind;
@@ -68,6 +88,8 @@ export interface Message {
   audioUri?: string;
   audioDuration?: number;
   imageUri?: string;
+  /** Presente quando esta mensagem é uma resposta a outra. */
+  replyTo?: MessageReply;
 }
 
 export interface SendMessageParams {
@@ -77,4 +99,6 @@ export interface SendMessageParams {
   audio?: {uri: string; duration: number};
   /** Presente quando a mensagem é uma foto tirada na hora (composer/câmera) em vez de texto. */
   image?: {uri: string};
+  /** Presente quando a mensagem responde outra (swipe-to-reply). */
+  replyTo?: MessageReply;
 }

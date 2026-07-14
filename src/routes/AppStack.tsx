@@ -86,7 +86,11 @@ export function AppStack() {
         name="NewConversationScreen"
         component={NewConversationScreen}
       />
-      <Stack.Screen name="ChatScreen" component={ChatScreen} />
+      <Stack.Screen
+        name="ChatScreen"
+        component={ChatScreen}
+        options={{ fullScreenGestureEnabled: false }}
+      />
       <Stack.Screen name="ChatProfileScreen" component={ChatProfileScreen} />
     </Stack.Navigator>
   );

@@ -2,13 +2,22 @@ import {useCallback} from 'react';
 
 import {PermissionsAndroid, Platform} from 'react-native';
 
-import {iosReadGalleryPermission} from '@react-native-camera-roll/camera-roll';
+import {
+  iosReadGalleryPermission,
+  iosRequestReadWriteGalleryPermission,
+} from '@react-native-camera-roll/camera-roll';
 
 /** Só leitura — nunca salvamos nada na galeria do usuário. */
 export function useGalleryPermission() {
   return useCallback(async (): Promise<boolean> => {
     if (Platform.OS === 'ios') {
-      const status = await iosReadGalleryPermission('readWrite');
+      // iosReadGalleryPermission só CONSULTA o status — no primeiro uso vem
+      // 'not-determined' e é preciso pedir de fato, senão o prompt do sistema
+      // nunca aparece e a grade fica vazia para sempre.
+      let status = await iosReadGalleryPermission('readWrite');
+      if (status === 'not-determined') {
+        status = await iosRequestReadWriteGalleryPermission();
+      }
       return status === 'granted' || status === 'limited';
     }
 

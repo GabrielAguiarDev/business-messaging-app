@@ -34,6 +34,14 @@ function toMessage(messageAPI: MessageAPI): Message {
     audioUri: messageAPI.audio_uri,
     audioDuration: messageAPI.audio_duration,
     imageUri: messageAPI.image_uri,
+    replyTo: messageAPI.reply_to
+      ? {
+          messageId: messageAPI.reply_to.message_id,
+          authorName: messageAPI.reply_to.author_name,
+          preview: messageAPI.reply_to.preview,
+          kind: messageAPI.reply_to.kind,
+        }
+      : undefined,
   };
 }
 

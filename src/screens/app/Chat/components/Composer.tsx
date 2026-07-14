@@ -26,6 +26,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {scheduleOnRN} from 'react-native-worklets';
 
 import {Box, Icon, IconName, Text, TouchableOpacityBox} from '@components';
+import {MessageReply} from '@domain';
 import {useAppTheme} from '@hooks';
 import {toastService} from '@services';
 import {ThemeColors} from '@theme';
@@ -55,6 +56,9 @@ interface ComposerProps {
   onSend: () => void;
   onSendAudio: (uri: string, durationSeconds: number) => void;
   onSendImage: (uri: string) => void;
+  /** Mensagem sendo respondida (swipe-to-reply) — mostra a barra de referência acima do input. */
+  replyingTo?: MessageReply | null;
+  onCancelReply?: () => void;
 }
 
 /**
@@ -76,9 +80,12 @@ export function Composer({
   onSend,
   onSendAudio,
   onSendImage,
+  replyingTo,
+  onCancelReply,
 }: ComposerProps) {
   const insets = useSafeAreaInsets();
   const {colors} = useAppTheme();
+  const inputRef = useRef<RNTextInput>(null);
   const [focused, setFocused] = useState(false);
   const [attachmentsVisible, setAttachmentsVisible] = useState(false);
   const [galleryVisible, setGalleryVisible] = useState(false);
@@ -111,6 +118,13 @@ export function Composer({
   }, []);
 
   const hasDraft = value.trim().length > 0;
+
+  // começar uma resposta já abre o teclado com o input focado (WhatsApp)
+  useEffect(() => {
+    if (replyingTo) {
+      inputRef.current?.focus();
+    }
+  }, [replyingTo]);
 
   function openAttachments() {
     // o teclado do iOS renderiza ACIMA do Modal — fechar antes
@@ -186,9 +200,54 @@ export function Composer({
         onLayout={e => {
           boxWidth.value = e.nativeEvent.layout.width;
         }}>
+        {/* Barra de referência da resposta — acima do input, estilo WhatsApp */}
+        {replyingTo && !recording && (
+          <Animated.View
+            entering={FadeIn.duration(160)}
+            exiting={FadeOut.duration(100)}
+            layout={TRANSITION}>
+            <Box
+              flexDirection="row"
+              alignItems="center"
+              backgroundColor="surface"
+              borderRadius="br10"
+              borderLeftWidth={3}
+              borderLeftColor="primary"
+              paddingHorizontal="s10"
+              paddingVertical="s6"
+              marginBottom="s8"
+              gap="s8">
+              <Box flex={1}>
+                <Text
+                  variant="captionSmall"
+                  fontWeight="700"
+                  color="primary"
+                  numberOfLines={1}>
+                  {replyingTo.authorName}
+                </Text>
+                <Text variant="captionSmall" color="textSecondary" numberOfLines={1}>
+                  {replyingTo.preview}
+                </Text>
+              </Box>
+              <TouchableOpacityBox
+                onPress={onCancelReply}
+                activeOpacity={0.7}
+                width={26}
+                height={26}
+                borderRadius="full"
+                backgroundColor="chip"
+                alignItems="center"
+                justifyContent="center">
+                <Icon name="close" size={13} color="textSecondary" />
+              </TouchableOpacityBox>
+            </Box>
+          </Animated.View>
+        )}
+
         <Box flexDirection="row" alignItems="center" gap="s8" position="relative">
           <Box flex={1} justifyContent="center">
             <RNTextInput
+              ref={inputRef}
               value={value}
               onChangeText={onChangeText}
               onFocus={() => setFocused(true)}

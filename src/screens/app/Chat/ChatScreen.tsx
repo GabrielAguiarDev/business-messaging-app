@@ -1,4 +1,4 @@
-import React, {useMemo, useState} from 'react';
+import React, {useMemo, useRef, useState} from 'react';
 
 import {
   Alert,
@@ -16,6 +16,7 @@ import {Avatar, Box, IconButton, Text, TouchableOpacityBox} from '@components';
 import {
   Chat,
   Message,
+  MessageReply,
   useChatDelete,
   useChatDetails,
   useChatMessages,
@@ -38,6 +39,8 @@ export function ChatScreen({
   const insets = useSafeAreaInsets();
   const [draft, setDraft] = useState('');
   const [menuVisible, setMenuVisible] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+  const listRef = useRef<FlatList<Message>>(null);
 
   const {chat} = useChatDetails(chatId);
   const {messages} = useChatMessages(chatId);
@@ -79,24 +82,61 @@ export function ChatScreen({
     onActivate: () => Keyboard.dismiss(),
   });
 
+  /** Monta a referência exibida na bolha/composer a partir da mensagem respondida. */
+  function toReplyRef(message: Message): MessageReply {
+    return {
+      messageId: message.id,
+      authorName: message.isMine
+        ? 'Você'
+        : message.author?.name ?? chat?.name ?? '',
+      preview:
+        message.kind === 'audio'
+          ? '🎤 Mensagem de voz'
+          : message.kind === 'image'
+            ? '📷 Foto'
+            : message.text,
+      kind: message.kind,
+    };
+  }
+
+  const replyRef = replyingTo ? toReplyRef(replyingTo) : undefined;
+
   function submitMessage() {
     if (!draft.trim()) {
       return;
     }
-    sendMessage({chatId, text: draft});
+    sendMessage({chatId, text: draft, replyTo: replyRef});
     setDraft('');
+    setReplyingTo(null);
   }
 
   function submitAudioMessage(uri: string, duration: number) {
-    sendMessage({chatId, audio: {uri, duration}});
+    sendMessage({chatId, audio: {uri, duration}, replyTo: replyRef});
+    setReplyingTo(null);
   }
 
   function submitImageMessage(uri: string) {
-    sendMessage({chatId, image: {uri}});
+    sendMessage({chatId, image: {uri}, replyTo: replyRef});
+    setReplyingTo(null);
+  }
+
+  /** Tap na citação de uma resposta → rola até a mensagem original. */
+  function scrollToMessage(messageId: string) {
+    const index = invertedMessages.findIndex(m => m.id === messageId);
+    if (index < 0) {
+      return;
+    }
+    listRef.current?.scrollToIndex({index, animated: true, viewPosition: 0.5});
   }
 
   function renderItem({item}: ListRenderItemInfo<Message>) {
-    return <MessageBubble message={item} />;
+    return (
+      <MessageBubble
+        message={item}
+        onReply={setReplyingTo}
+        onQuotePress={scrollToMessage}
+      />
+    );
   }
 
   return (
@@ -149,6 +189,7 @@ export function ChatScreen({
         {/* Mensagens */}
         <GestureDetector gesture={dismissKeyboardTap}>
           <FlatList
+            ref={listRef}
             data={invertedMessages}
             inverted
             style={$flex}
@@ -156,6 +197,15 @@ export function ChatScreen({
             renderItem={renderItem}
             contentContainerStyle={$messagesContent}
             showsVerticalScrollIndicator={false}
+            // scrollToIndex sem getItemLayout falha quando o alvo ainda não
+            // foi medido (fora do render window) — aproxima via offset e o
+            // FlatList tenta de novo sozinho na sequência
+            onScrollToIndexFailed={info => {
+              listRef.current?.scrollToOffset({
+                offset: info.averageItemLength * info.index,
+                animated: true,
+              });
+            }}
           />
         </GestureDetector>
 
@@ -166,6 +216,8 @@ export function ChatScreen({
           onSend={submitMessage}
           onSendAudio={submitAudioMessage}
           onSendImage={submitImageMessage}
+          replyingTo={replyRef}
+          onCancelReply={() => setReplyingTo(null)}
         />
       </KeyboardAvoidingView>
 

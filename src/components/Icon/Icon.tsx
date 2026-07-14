@@ -32,6 +32,7 @@ export type IconName =
   | 'play'
   | 'plus'
   | 'poll'
+  | 'reply'
   | 'search'
   | 'send'
   | 'settings'
@@ -167,6 +168,24 @@ export function Icon({name, size = 24, color = 'text'}: IconProps) {
         strokeWidth={2.2}
         strokeLinecap="round"
       />
+    ),
+    reply: (
+      <>
+        <Path
+          d="M9.5 6 4 11l5.5 5"
+          stroke={c}
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <Path
+          d="M4 11h9.5a6.5 6.5 0 016.5 6.5v.5"
+          stroke={c}
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </>
     ),
     search: (
       <>

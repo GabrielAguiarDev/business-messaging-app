@@ -23,11 +23,20 @@ async function sendMessage({
   text,
   audio,
   image,
+  replyTo,
 }: SendMessageParams): Promise<Message> {
   const message = await chatApi.sendMessage(chatId, {
     text: text?.trim(),
     audio,
     image,
+    reply_to: replyTo
+      ? {
+          message_id: replyTo.messageId,
+          author_name: replyTo.authorName,
+          preview: replyTo.preview,
+          kind: replyTo.kind,
+        }
+      : undefined,
   });
   return chatAdapter.toMessage(message);
 }
