@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+html,body{margin:0;padding:0}
+*{box-sizing:border-box;-webkit-font-smoothing:antialiased}
+.appwrap{--bg:#ffffff;--bg-2:#f2f2f7;--header:#ffffff;--text:#0b0b0f;--text-2:#8a8a8e;--text-3:#c2c2c8;--sep:rgba(60,60,67,0.12);--chip:#eeeef2;--card:#ffffff;--tint:#efeafb;--bubble-in:#ffffff;--bubble-out:#e9e1fb;--chatbg:#ece7e1;--online:#34c759;--danger:#e5484d}
+.appwrap[data-theme="dark"]{--bg:#0c0c10;--bg-2:#000;--header:#151519;--text:#f5f5f7;--text-2:#95959c;--text-3:#5c5c63;--sep:rgba(255,255,255,0.09);--chip:#1e1e24;--card:#151519;--tint:#241f36;--bubble-in:#1e1e24;--bubble-out:#3f3466;--chatbg:#08080b;--online:#32d74b;--danger:#ff453a}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.94)}}
+@keyframes fadeup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+input,button,textarea{font-family:inherit}
+input::placeholder{color:var(--text-3)}
+</style>
+</helmet>
+<x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ isDark }}" hint-size="402px,874px">
+<div class="appwrap" data-theme="{{ themeAttr }}" style="height:100%;display:flex;flex-direction:column;background:var(--bg);color:var(--text);font-family:-apple-system,system-ui,sans-serif;--accent:{{ accentVar }}">
+
+<!-- SPLASH -->
+<sc-if value="{{ isSplash }}" hint-placeholder-val="{{ true }}">
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;background:var(--accent)">
+  <div style="width:98px;height:98px;border-radius:27px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;animation:pulse 1.6s ease-in-out infinite">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H9l-4 4V5z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>
+  </div>
+  <div style="text-align:center">
+    <div style="color:#fff;font-size:23px;font-weight:700;letter-spacing:-.3px">Central de Mensagens</div>
+    <div style="color:rgba(255,255,255,.78);font-size:13px;margin-top:5px">Comunicação corporativa</div>
+  </div>
+</div>
+</sc-if>
+
+<!-- LOGIN -->
+<sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+<div style="flex:1;display:flex;flex-direction:column;min-height:0;overflow:auto;padding:0 28px 28px;background:var(--bg)">
+  <div style="height:96px"></div>
+  <div style="width:64px;height:64px;border-radius:18px;background:var(--accent);display:flex;align-items:center;justify-content:center;margin-bottom:26px">
+    <svg width="34" height="34" viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H9l-4 4V5z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>
+  </div>
+  <div style="font-size:27px;font-weight:700;color:var(--text)">Entrar</div>
+  <div style="font-size:14px;color:var(--text-2);margin-top:6px;margin-bottom:26px">Acesse com seu email corporativo</div>
+  <div style="margin-bottom:14px">
+    <div style="font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:6px">Email</div>
+    <input value="{{ email }}" onChange="{{ onEmail }}" type="email" style="width:100%;height:50px;border-radius:14px;border:1px solid var(--sep);background:var(--card);color:var(--text);padding:0 16px;font-size:16px;outline:none" />
+  </div>
+  <div style="margin-bottom:6px">
+    <div style="font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:6px">Senha</div>
+    <input value="{{ pass }}" onChange="{{ onPass }}" type="password" style="width:100%;height:50px;border-radius:14px;border:1px solid var(--sep);background:var(--card);color:var(--text);padding:0 16px;font-size:16px;outline:none" />
+  </div>
+  <sc-if value="{{ hasLoginErr }}" hint-placeholder-val="{{ false }}"><div style="color:var(--danger);font-size:13px;margin-top:6px">{{ loginErr }}</div></sc-if>
+  <button onClick="{{ doLogin }}" style="height:52px;border-radius:26px;background:var(--accent);color:#fff;border:none;font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;width:100%;margin-top:22px">
+    <sc-if value="{{ loginLoading }}" hint-placeholder-val="{{ false }}"><div style="width:20px;height:20px;border:2.5px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite"></div></sc-if>
+    <sc-if value="{{ loginIdle }}" hint-placeholder-val="{{ true }}"><span>Entrar</span></sc-if>
+  </button>
+  <button onClick="{{ goForgot }}" style="background:none;border:none;color:var(--accent);font-size:14px;font-weight:600;margin-top:20px;align-self:center;cursor:pointer">Esqueci a senha</button>
+</div>
+</sc-if>
+
+<!-- FORGOT -->
+<sc-if value="{{ isForgot }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;flex-direction:column;min-height:0;overflow:auto;padding:0 28px 28px;background:var(--bg)">
+  <div style="padding-top:56px"><button onClick="{{ backToLogin }}" style="width:38px;height:38px;border-radius:50%;background:var(--chip);border:none;display:flex;align-items:center;justify-content:center;color:var(--text);cursor:pointer"><svg width="11" height="18" viewBox="0 0 11 18" fill="none"><path d="M9.5 1.5 2 9l7.5 7.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+  <div style="font-size:27px;font-weight:700;color:var(--text);margin-top:24px">Recuperar acesso</div>
+  <div style="font-size:14px;color:var(--text-2);margin-top:6px;margin-bottom:26px">Enviaremos um link de redefinição para seu email.</div>
+  <sc-if value="{{ forgotIdle }}" hint-placeholder-val="{{ true }}">
+  <div>
+    <div style="font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:6px">Email</div>
+    <input value="{{ forgotEmail }}" onChange="{{ onForgotEmail }}" type="email" style="width:100%;height:50px;border-radius:14px;border:1px solid var(--sep);background:var(--card);color:var(--text);padding:0 16px;font-size:16px;outline:none" />
+    <button onClick="{{ sendForgot }}" style="height:52px;border-radius:26px;background:var(--accent);color:#fff;border:none;font-size:16px;font-weight:600;cursor:pointer;width:100%;margin-top:22px">Enviar link</button>
+  </div>
+  </sc-if>
+  <sc-if value="{{ forgotSent }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:30px;text-align:center;animation:fadeup .3s ease">
+    <div style="width:64px;height:64px;border-radius:50%;background:var(--tint);display:flex;align-items:center;justify-content:center"><svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4 10-10" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div style="font-size:17px;font-weight:600;color:var(--text)">Link enviado!</div>
+    <div style="font-size:14px;color:var(--text-2)">Verifique {{ forgotEmail }} e siga as instruções.</div>
+    <button onClick="{{ backToLogin }}" style="background:none;border:none;color:var(--accent);font-size:14px;font-weight:600;margin-top:6px;cursor:pointer">Voltar ao login</button>
+  </div>
+  </sc-if>
+</div>
+</sc-if>
+
+<!-- MODULE LIST -->
+<sc-if value="{{ isModuleList }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;flex-direction:column;min-height:0">
+  <div style="padding:60px 20px 6px;background:var(--bg);display:flex;align-items:center;justify-content:space-between">
+    <div style="font-size:30px;font-weight:700;color:var(--text)">Módulos</div>
+    <button onClick="{{ createModule }}" style="width:38px;height:38px;border-radius:50%;background:var(--accent);border:none;display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer"><svg width="20" height="20" viewBox="0 0 20 20"><path d="M10 3v14M3 10h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
+  </div>
+  <div style="flex:1;overflow:auto;background:var(--bg)">
+    <div style="padding:16px 20px 6px;font-size:13px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.4px">Communities</div>
+    <sc-for list="{{ communities }}" as="m" hint-placeholder-count="2">
+      <button onClick="{{ m.open }}" style="display:flex;align-items:center;gap:14px;width:100%;background:transparent;border:none;padding:10px 16px 0;text-align:left;cursor:pointer;color:inherit">
+        <div style="width:52px;height:52px;border-radius:15px;background:{{ m.color }};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;flex-shrink:0">{{ m.initial }}</div>
+        <div style="flex:1;min-width:0;border-bottom:1px solid var(--sep);padding-bottom:12px">
+          <div style="display:flex;align-items:center;gap:8px"><span style="font-weight:600;font-size:16px">{{ m.name }}</span><sc-if value="{{ m.unread }}" hint-placeholder-val="{{ false }}"><span style="min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-left:auto">{{ m.unread }}</span></sc-if></div>
+          <div style="margin-top:5px"><span style="font-size:11px;font-weight:600;color:var(--accent);background:var(--tint);padding:2px 8px;border-radius:6px">Community</span></div>
+        </div>
+      </button>
+    </sc-for>
+    <div style="height:16px"></div>
+  </div>
+  <div style="flex-shrink:0;display:flex;background:var(--header);border-top:1px solid var(--sep);padding:8px 0 26px">
+    <button onClick="{{ goModulos }}" style="flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;color:{{ tabModulosColor }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="8.5" cy="8" r="3" stroke="currentColor" stroke-width="1.9"/><path d="M2.5 19c0-3 2.7-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path d="M16 6.4a2.8 2.8 0 010 5.2M18.6 18.6c-.2-1.9-1.1-3.3-2.5-4.1" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg><span style="font-size:11px;font-weight:600">Módulos</span></button>
+    <button onClick="{{ goAtendimento }}" style="flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;color:{{ tabAtendimentoColor }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 13v-1a7 7 0 0114 0v1" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><rect x="2.6" y="12.5" width="3.8" height="7" rx="1.9" stroke="currentColor" stroke-width="1.9"/><rect x="17.6" y="12.5" width="3.8" height="7" rx="1.9" stroke="currentColor" stroke-width="1.9"/><path d="M19.5 19.5v.4a3 3 0 01-3 3H14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg><span style="font-size:11px;font-weight:600">Atend.</span></button>
+    <button onClick="{{ goChats }}" style="flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;color:{{ tabChatsColor }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H9l-4 4V5z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg><span style="font-size:11px;font-weight:600">Chats</span></button>
+    <button onClick="{{ goConfig }}" style="flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;color:{{ tabConfigColor }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.9"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg><span style="font-size:11px;font-weight:600">Config</span></button>
+  </div>
+</div>
+</sc-if>
+
+<!-- COMMUNITY -->
+<sc-if value="{{ isCommunity }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;flex-direction:column;min-height:0">
+  <div style="display:flex;align-items:center;gap:10px;padding:56px 12px 10px;background:var(--header);border-bottom:1px solid var(--sep)">
+    <button onClick="{{ back }}" style="width:38px;height:38px;border-radius:50%;background:var(--chip);border:none;display:flex;align-items:center;justify-content:center;color:var(--text);cursor:pointer;flex-shrink:0"><svg width="11" height="18" viewBox="0 0 11 18" fill="none"><path d="M9.5 1.5 2 9l7.5 7.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div style="width:40px;height:40px;border-radius:12px;background:{{ curModule.color }};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex-shrink:0">{{ curModule.initial }}</div>
+    <div style="flex:1;min-width:0"><div style="font-size:17px;font-weight:700;color:var(--text)">{{ curModule.name }}</div><div style="font-size:12px;color:var(--text-2)">Community</div></div>
+    <button style="width:38px;height:38px;border-radius:50%;background:var(--chip);border:none;display:flex;align-items:center;justify-content:center;color:var(--text);cursor:pointer;flex-shrink:0"><svg width="20" height="6" viewBox="0 0 20 6"><circle cx="3" cy="3" r="2.3" fill="currentColor"/><circle cx="10" cy="3" r="2.3" fill="currentColor"/><circle cx="17" cy="3" r="2.3" fill="currentColor"/></svg></button>
+  </div>
+  <div style="flex:1;overflow:auto;background:var(--bg)">
+    <div style="padding:14px 16px 4px">
+      <button onClick="{{ announcement.open }}" style="display:flex;gap:12px;width:100%;background:var(--tint);border:1px solid var(--sep);border-radius:16px;padding:14px;text-align:left;cursor:pointer;align-items:center;color:inherit">
+        <div style="width:46px;height:46px;border-radius:12px;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3 10v4h3l6 4V6L6 10H3z" fill="#fff"/><path d="M16 9c1.6 1.2 1.6 4.8 0 6" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+        <div style="flex:1;min-width:0"><div style="display:flex;align-items:center"><span style="font-weight:700;font-size:16px">Anúncios</span><span style="margin-left:auto;font-size:12px;color:var(--text-2)">{{ announcement.date }}</span></div><div style="font-size:13px;color:var(--text-2);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ announcement.last }}</div></div>
+      </button>
+    </div>
+    <div style="padding:18px 20px 6px;font-size:13px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.4px">Grupos que você participa</div>
+    <sc-for list="{{ myGroups }}" as="g" hint-placeholder-count="3">
+      <button onClick="{{ g.open }}" style="display:flex;align-items:center;gap:12px;width:100%;background:transparent;border:none;padding:8px 16px 0;text-align:left;cursor:pointer;color:inherit">
+        <div style="width:50px;height:50px;border-radius:50%;background:{{ g.color }};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:17px;flex-shrink:0">{{ g.initial }}</div>
+        <div style="flex:1;min-width:0;border-bottom:1px solid var(--sep);padding-bottom:12px">
+          <div style="display:flex;align-items:center"><span style="font-weight:600;font-size:16px;color:var(--text)">{{ g.name }}</span><span style="margin-left:auto;font-size:13px;color:{{ g.timeColor }}">{{ g.time }}</span></div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:3px">
+            <sc-if value="{{ g.muted }}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="color:var(--text-3);flex-shrink:0"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M17 8l5 8M22 8l-5 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></sc-if>
+            <span style="flex:1;min-width:0;font-size:14px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ g.last }}</span>
+            <sc-if value="{{ g.unread }}" hint-placeholder-val="{{ false }}"><span style="min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center">{{ g.unread }}</span></sc-if>
+          </div>
+        </div>
+      </button>
+    </sc-for>
+    <sc-if value="{{ hasJoinable }}" hint-placeholder-val="{{ true }}">
+    <div style="padding:18px 20px 6px;font-size:13px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.4px">Grupos que você pode entrar</div>
+    <sc-for list="{{ joinable }}" as="j" hint-placeholder-count="2">
+      <button onClick="{{ j.open }}" style="display:flex;align-items:center;gap:12px;width:100%;background:transparent;border:none;padding:8px 16px 0;text-align:left;cursor:pointer;color:inherit">
+        <div style="width:50px;height:50px;border-radius:50%;background:{{ j.color }};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:17px;flex-shrink:0">{{ j.initial }}</div>
+        <div style="flex:1;min-width:0;border-bottom:1px solid var(--sep);padding-bottom:12px;display:flex;align-items:center">
+          <div style="flex:1"><div style="font-weight:600;font-size:16px;color:var(--text)">{{ j.name }}</div><div style="font-size:13px;color:var(--text-2);margin-top:2px">{{ j.members }} membros</div></div>
+          <svg width="8" height="14" viewBox="0 0 8 14" style="color:var(--text-3)"><path d="M1 1l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </button>
+    </sc-for>
+    </sc-if>
+    <div style="height:14px"></div>
+  </div>
+  <div style="flex-shrink:0;padding:10px 16px 28px;background:var(--bg);border-top:1px solid var(--sep)">
+    <button onClick="{{ addGroup }}" style="height:50px;border-radius:25px;background:var(--accent);color:#fff;border:none;font-size:16px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;width:100%"><svg width="18" height="18" viewBox="0 0 20 20"><path d="M10 3v14M3 10h14" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>Adicionar grupo</button>
+  </div>
+</div>
+</sc-if>
+
+<!-- CHANNEL LIST (ATENDIMENTO nível 1) -->
+<sc-if value="{{ isChannelList }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;flex-direction:column;min-height:0">
+  <div style="padding:60px 20px 8px;background:var(--bg)">
+    <div style="font-size:30px;font-weight:700;color:var(--text)">Atendimento</div>
+    <div style="font-size:13px;color:var(--text-2);margin-top:2px">Canais por produto</div>
+  </div>
+  <div style="flex:1;overflow:auto;background:var(--bg)">
+    <sc-if value="{{ channelsEmpty }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:70px 40px;text-align:center;color:var(--text-2)"><div style="width:64px;height:64px;border-radius:50%;background:var(--chip);display:flex;align-items:center;justify-content:center"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" style="color:var(--text-3)"><path d="M5 13v-1a7 7 0 0114 0v1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="3" y="12.5" width="3.6" height="7" rx="1.8" stroke="currentColor" stroke-width="1.8"/><rect x="17.4" y="12.5" width="3.6" height="7" rx="1.8" stroke="currentColor" stroke-width="1.8"/></svg></div><div style="font-size:16px;font-weight:600;color:var(--text)">Nenhum canal disponível</div><div style="font-size:13px">Você ainda não tem acesso a canais de atendimento.</div></div>
+    </sc-if>
+    <div style="height:6px"></div>
+    <sc-for list="{{ channels }}" as="c" hint-placeholder-count="2">
+      <button onClick="{{ c.open }}" style="display:flex;align-items:center;gap:14px;width:100%;background:transparent;border:none;padding:12px 16px 0;text-align:left;cursor:pointer;color:inherit">
+        <div style="width:52px;height:52px;border-radius:15px;background:{{ c.color }};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;flex-shrink:0">{{ c.initial }}</div>
+        <div style="flex:1;min-width:0;border-bottom:1px solid var(--sep);padding-bottom:14px">
+          <div style="font-weight:600;font-size:16px;color:var(--text)">{{ c.name }}</div>
+          <div style="margin-top:5px"><span style="font-size:11px;font-weight:600;color:#c9743c;background:rgba(224,134,79,.14);padding:2px 8px;border-radius:6px">Atendimento · {{ c.product }}</span></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--sep);padding-bottom:14px;flex-shrink:0">
+          <sc-if value="{{ c.waiting }}" hint-placeholder-val="{{ true }}"><div style="display:flex;flex-direction:column;align-items:center;gap:1px"><span style="background:#e0864f;color:#fff;border-radius:11px;min-width:22px;height:22px;padding:0 7px;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center">{{ c.waiting }}</span><span style="font-size:9px;color:var(--text-2)">aguard.</span></div></sc-if>
+          <svg width="8" height="14" viewBox="0 0 8 14" style="color:var(--text-3)"><path d="M1 1l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </button>
+    </sc-for>
+    <div style="height:16px"></div>
+  </div>
+  <div style="flex-shrink:0;display:flex;background:var(--header);border-top:1px solid var(--sep);padding:8px 0 26px">
+    <button onClick="{{ goModulos }}" style="flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;color:{{ tabModulosColor }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="8.5" cy="8" r="3" stroke="currentColor" stroke-width="1.9"/><path d="M2.5 19c0-3 2.7-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path d="M16 6.4a2.8 2.8 0 010 5.2M18.6 18.6c-.2-1.9-1.1-3.3-2.5-4.1" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg><span style="font-size:11px;font-weight:600">Módulos</span></button>
+    <button onClick="{{ goAtendimento }}" style="flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;color:{{ tabAtendimentoColor }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 13v-1a7 7 0 0114 0v1" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><rect x="2.6" y="12.5" width="3.8" height="7" rx="1.9" stroke="currentColor" stroke-width="1.9"/><rect x="17.6" y="12.5" width="3.8" height="7" rx="1.9" stroke="currentColor" stroke-width="1.9"/><path d="M19.5 19.5v.4a3 3 0 01-3 3H14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg><span style="font-size:11px;font-weight:600">Atend.</span></button>
+    <button onClick="{{ goChats }}" style="flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;color:{{ tabChatsColor }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H9l-4 4V5z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg><span style="font-size:11px;font-weight:600">Chats</span></button>
+    <button onClick="{{ goConfig }}" style="flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;color:{{ tabConfigColor }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.9"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg><span style="font-size:11px;font-weight:600">Config</span></button>
+  </div>
+</div>
+</sc-if>
+
+<!-- ATENDIMENTO -->
+<sc-if value="{{ isAtendimento }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;flex-direction:column;min-height:0">
+  <div style="display:flex;align-items:center;gap:10px;padding:56px 12px 10px;background:var(--header)">
+    <button onClick="{{ back }}" style="width:38px;height:38px;border-radius:50%;background:var(--chip);border:none;display:flex;align-items:center;justify-content:center;color:var(--text);cursor:pointer;flex-shrink:0"><svg width="11" height="18" viewBox="0 0 11 18" fill="none"><path d="M9.5 1.5 2 9l7.5 7.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div style="width:40px;height:40px;border-radius:12px;background:{{ curChannel.color }};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex-shrink:0">{{ curChannel.initial }}</div>
+    <div style="flex:1;min-width:0"><div style="font-size:17px;font-weight:700;color:var(--text)">{{ curChannel.name }}</div><div style="font-size:12px;color:var(--text-2)">Atendimento · {{ curChannel.product }}</div></div>
+    <button style="width:38px;height:38px;border-radius:50%;background:var(--chip);border:none;display:flex;align-items:center;justify-content:center;color:var(--text);cursor:pointer;flex-shrink:0"><svg width="20" height="6" viewBox="0 0 20 6"><circle cx="3" cy="3" r="2.3" fill="currentColor"/><circle cx="10" cy="3" r="2.3" fill="currentColor"/><circle cx="17" cy="3" r="2.3" fill="currentColor"/></svg></button>
+  </div>
+  <div style="display:flex;padding:8px 12px 12px;gap:7px;background:var(--header);border-bottom:1px solid var(--sep)">
+    <button onClick="{{ setQA }}" style="flex:1;padding:8px 4px;border-radius:12px;border:none;cursor:pointer;background:{{ qaBg }};color:{{ qaColor }};font-size:12.5px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:5px">Aguardando<span style="background:{{ qaColor }};color:var(--header);border-radius:9px;min-width:18px;padding:0 5px;font-size:11px">{{ counts.a }}</span></button>
+    <button onClick="{{ setQT }}" style="flex:1;padding:8px 4px;border-radius:12px;border:none;cursor:pointer;background:{{ qtBg }};color:{{ qtColor }};font-size:12.5px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:5px">Em atend.<span style="background:{{ qtColor }};color:var(--header);border-radius:9px;min-width:18px;padding:0 5px;font-size:11px">{{ counts.t }}</span></button>
+    <button onClick="{{ setQR }}" style="flex:1;padding:8px 4px;border-radius:12px;border:none;cursor:pointer;background:{{ qrBg }};color:{{ qrColor }};font-size:12.5px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:5px">Resolvidas<span style="background:{{ qrColor }};color:var(--header);border-radius:9px;min-width:18px;padding:0 5px;font-size:11px">{{ counts.r }}</span></button>
+  </div>
+  <div style="flex:1;overflow:auto;background:var(--bg)">
+    <sc-if value="{{ queueEmpty }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:60px 40px;text-align:center;color:var(--text-2)">
+      <div style="width:64px;height:64px;border-radius:50%;background:var(--chip);display:flex;align-items:center;justify-content:center"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" style="color:var(--text-3)"><path d="M4 5h16v11H9l-4 4V5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+      <div style="font-size:16px;font-weight:600;color:var(--text)">Nenhuma conversa aqui</div>
+      <div style="font-size:13px">As conversas iniciadas por clientes neste produto aparecerão nesta fila.</div>
+    </div>
+    </sc-if>
+    <sc-for list="{{ queueItems }}" as="it" hint-placeholder-count="3">
+      <div onClick="{{ it.open }}" style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--sep);cursor:pointer">
+        <div style="width:50px;height:50px;border-radius:50%;background:{{ it.color }};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:17px;flex-shrink:0">{{ it.initial }}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center"><span style="font-weight:600;font-size:16px;color:var(--text)">{{ it.name }}</span><span style="margin-left:auto;font-size:12px;color:var(--text-2)">{{ it.time }}</span></div>
+          <div style="font-size:14px;color:var(--text-2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ it.preview }}</div>
+          <sc-if value="{{ it.showAssigned }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;color:var(--accent);margin-top:4px;font-weight:600;display:flex;align-items:center;gap:4px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4 10-10" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Assumida por {{ it.assignedTo }}</div></sc-if>
+        </div>
+        <sc-if value="{{ it.isWaiting }}" hint-placeholder-val="{{ true }}"><button onClick="{{ it.assumeFn }}" style="padding:8px 15px;border-radius:16px;background:var(--accent);color:#fff;border:none;font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0">Assumir</button></sc-if>
+      </div>
+    </sc-for>
+    <div style="height:14px"></div>
+  </div>
+</div>
+</sc-if>
+
+<!-- CHAT LIST -->
+<sc-if value="{{ isChatList }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;flex-direction:column;min-height:0">
+  <div style="padding:60px 20px 4px;background:var(--bg);display:flex;align-items:center;justify-content:space-between">
+    <div style="font-size:30px;font-weight:700;color:var(--text)">Chats</div>
+    <button onClick="{{ openNewConv }}" style="width:38px;height:38px;border-radius:50%;background:var(--accent);border:none;display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 5h13v9H9l-4 4V5z" stroke="#fff" stroke-width="1.9" stroke-linejoin="round"/><path d="M18 3v6M15 6h6" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/></svg></button>
+  </div>
+  <div style="padding:6px 16px 8px;background:var(--bg)">
+    <div style="display:flex;align-items:center;gap:8px;background:var(--chip);border-radius:12px;padding:9px 12px"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="color:var(--text-3)"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.8"/><path d="m11 11 3.5 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><input value="{{ chatQuery }}" onChange="{{ onChatQuery }}" placeholder="Buscar conversas e pessoas" style="flex:1;border:none;background:none;outline:none;color:var(--text);font-size:15px" /></div>
+  </div>
+  <div style="flex:1;overflow:auto;background:var(--bg)">
+    <sc-if value="{{ chatsEmpty }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:60px 40px;text-align:center;color:var(--text-2)"><div style="width:64px;height:64px;border-radius:50%;background:var(--chip);display:flex;align-items:center;justify-content:center"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" style="color:var(--text-3)"><path d="M4 5h16v11H9l-4 4V5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div><div style="font-size:16px;font-weight:600;color:var(--text)">Nenhuma conversa</div><div style="font-size:13px">Toque em Nova conversa para começar.</div></div>
+    </sc-if>
+    <sc-for list="{{ chats }}" as="c" hint-placeholder-count="6">
+      <button onClick="{{ c.open }}" style="display:flex;align-items:center;gap:12px;width:100%;background:transparent;border:none;padding:9px 16px 0;text-align:left;cursor:pointer;color:inherit">
+        <div style="width:52px;height:52px;border-radius:50%;background:{{ c.color }};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:18px;flex-shrink:0">{{ c.initial }}</div>
+        <div style="flex:1;min-width:0;border-bottom:1px solid var(--sep);padding-bottom:11px">
+          <div style="display:flex;align-items:center;gap:6px"><span style="font-weight:600;font-size:16px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px">{{ c.name }}</span><sc-if value="{{ c.hasContext }}" hint-placeholder-val="{{ false }}"><span style="font-size:10.5px;color:var(--text-2);background:var(--chip);padding:1px 6px;border-radius:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px">{{ c.context }}</span></sc-if><span style="margin-left:auto;font-size:13px;color:{{ c.timeColor }};flex-shrink:0">{{ c.time }}</span></div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:3px"><sc-if value="{{ c.muted }}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="color:var(--text-3);flex-shrink:0"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M17 8l5 8M22 8l-5 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></sc-if><span style="flex:1;min-width:0;font-size:14px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.preview }}</span><sc-if value="{{ c.unread }}" hint-placeholder-val="{{ false }}"><span style="min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center">{{ c.unread }}</span></sc-if></div>
+        </div>
+      </button>
+    </sc-for>
+    <div style="height:16px"></div>
+  </div>
+  <div style="flex-shrink:0;display:flex;background:var(--header);border-top:1px solid var(--sep);padding:8px 0 26px">
+    <button onClick="{{ goModulos }}" style="flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;color:{{ tabModulosColor }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="8.5" cy="8" r="3" stroke="currentColor" stroke-width="1.9"/><path d="M2.5 19c0-3 2.7-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path d="M16 6.4a2.8 2.8 0 010 5.2M18.6 18.6c-.2-1.9-1.1-3.3-2.5-4.1" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg><span style="font-size:11px;font-weight:600">Módulos</span></button>
+    <button onClick="{{ goAtendimento }}" style="flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;color:{{ tabAtendimentoColor }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 13v-1a7 7 0 0114 0v1" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><rect x="2.6" y="12.5" width="3.8" height="7" rx="1.9" stroke="currentColor" stroke-width="1.9"/><rect x="17.6" y="12.5" width="3.8" height="7" rx="1.9" stroke="currentColor" stroke-width="1.9"/><path d="M19.5 19.5v.4a3 3 0 01-3 3H14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg><span style="font-size:11px;font-weight:600">Atend.</span></button>
+    <button onClick="{{ goChats }}" style="flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;color:{{ tabChatsColor }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H9l-4 4V5z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg><span style="font-size:11px;font-weight:600">Chats</span></button>
+    <button onClick="{{ goConfig }}" style="flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;color:{{ tabConfigColor }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.9"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg><span style="font-size:11px;font-weight:600">Config</span></button>
+  </div>
+</div>
+</sc-if>
+
+<!-- NEW CONVERSATION -->
+<sc-if value="{{ isNewConv }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;flex-direction:column;min-height:0">
+  <div style="display:flex;align-items:center;gap:10px;padding:56px 16px 10px;background:var(--header);border-bottom:1px solid var(--sep)">
+    <button onClick="{{ back }}" style="width:38px;height:38px;border-radius:50%;background:var(--chip);border:none;display:flex;align-items:center;justify-content:center;color:var(--text);cursor:pointer;flex-shrink:0"><svg width="11" height="18" viewBox="0 0 11 18" fill="none"><path d="M9.5 1.5 2 9l7.5 7.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div style="font-size:19px;font-weight:700;color:var(--text)">Nova conversa</div>
+  </div>
+  <div style="padding:10px 16px 8px;background:var(--header)"><div style="display:flex;align-items:center;gap:8px;background:var(--chip);border-radius:12px;padding:9px 12px"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="color:var(--text-3)"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.8"/><path d="m11 11 3.5 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><input value="{{ dirQuery }}" onChange="{{ onDirQuery }}" placeholder="Buscar por nome ou cargo" style="flex:1;border:none;background:none;outline:none;color:var(--text);font-size:15px" /></div></div>
+  <div style="flex:1;overflow:auto;background:var(--bg)">
+    <div style="padding:14px 20px 6px;font-size:13px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.4px">Diretório da empresa</div>
+    <sc-for list="{{ directory }}" as="u" hint-placeholder-count="6">
+      <button onClick="{{ u.startDM }}" style="display:flex;align-items:center;gap:12px;width:100%;background:transparent;border:none;padding:9px 16px 0;text-align:left;cursor:pointer;color:inherit">
+        <div style="position:relative;flex-shrink:0"><div style="width:50px;height:50px;border-radius:50%;background:{{ u.color }};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:17px">{{ u.initial }}</div><sc-if value="{{ u.online }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;right:0;bottom:2px;width:13px;height:13px;border-radius:50%;background:var(--online);border:2px solid var(--bg)"></div></sc-if></div>
+        <div style="flex:1;min-width:0;border-bottom:1px solid var(--sep);padding-bottom:12px;display:flex;align-items:center"><div style="flex:1"><div style="font-weight:600;font-size:16px;color:var(--text)">{{ u.name }}</div><div style="font-size:13px;color:var(--text-2);margin-top:2px">{{ u.role }}</div></div><sc-if value="{{ u.admin }}" hint-placeholder-val="{{ false }}"><span style="font-size:10.5px;font-weight:700;color:var(--accent);background:var(--tint);padding:2px 8px;border-radius:6px">Admin</span></sc-if></div>
+      </button>
+    </sc-for>
+    <div style="height:16px"></div>
+  </div>
+</div>
+</sc-if>
+
+<!-- CHAT -->
+<sc-if value="{{ isChat }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;flex-direction:column;min-height:0">
+  <div style="display:flex;align-items:center;gap:10px;padding:56px 10px 10px;background:var(--header);border-bottom:1px solid var(--sep)">
+    <button onClick="{{ back }}" style="width:38px;height:38px;border-radius:50%;background:var(--chip);border:none;display:flex;align-items:center;justify-content:center;color:var(--text);cursor:pointer;flex-shrink:0"><svg width="11" height="18" viewBox="0 0 11 18" fill="none"><path d="M9.5 1.5 2 9l7.5 7.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div style="width:38px;height:38px;border-radius:50%;background:{{ curChat.color }};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:15px;flex-shrink:0">{{ curChat.initial }}</div>
+    <div style="flex:1;min-width:0"><div style="font-size:16px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ curChat.name }}</div><sc-if value="{{ hasChatContext }}" hint-placeholder-val="{{ false }}"><div style="font-size:11px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ chatContext }}</div></sc-if><sc-if value="{{ showSubtitle }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;color:{{ chatSubtitleColor }}">{{ chatSubtitle }}</div></sc-if></div>
+    <button style="width:38px;height:38px;border-radius:50%;background:var(--chip);border:none;display:flex;align-items:center;justify-content:center;color:var(--text);cursor:pointer;flex-shrink:0"><svg width="20" height="6" viewBox="0 0 20 6"><circle cx="3" cy="3" r="2.3" fill="currentColor"/><circle cx="10" cy="3" r="2.3" fill="currentColor"/><circle cx="17" cy="3" r="2.3" fill="currentColor"/></svg></button>
+  </div>
+  <sc-if value="{{ isAtt }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;align-items:center;gap:10px;padding:9px 16px;background:var(--tint);border-bottom:1px solid var(--sep)">
+    <span style="width:9px;height:9px;border-radius:50%;background:{{ statusColor }};flex-shrink:0"></span>
+    <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:{{ statusColor }}">{{ statusText }}</div><div style="font-size:11px;color:var(--text-2)">{{ curChat.product }} · {{ assignedText }}</div></div>
+    <sc-if value="{{ showAssume }}" hint-placeholder-val="{{ false }}"><button style="padding:6px 13px;border-radius:15px;background:var(--accent);color:#fff;border:none;font-size:12.5px;font-weight:600;cursor:pointer">Assumir</button></sc-if>
+    <sc-if value="{{ showResolve }}" hint-placeholder-val="{{ false }}"><button onClick="{{ markResolved }}" style="padding:6px 13px;border-radius:15px;background:transparent;border:1px solid var(--accent);color:var(--accent);font-size:12.5px;font-weight:600;cursor:pointer">Resolver</button></sc-if>
+    <button style="padding:6px 12px;border-radius:15px;background:var(--chip);border:none;color:var(--text-2);font-size:12.5px;font-weight:600;cursor:pointer">Transferir</button>
+  </div>
+  </sc-if>
+  <div style="flex:1;overflow:auto;background:var(--chatbg);padding:14px 12px;display:flex;flex-direction:column;gap:6px">
+    <sc-for list="{{ messages }}" as="m" hint-placeholder-count="4">
+      <sc-if value="{{ m.isSystem }}" hint-placeholder-val="{{ false }}"><div style="align-self:center;background:var(--tint);color:var(--text-2);font-size:12px;padding:5px 12px;border-radius:10px;margin:4px 0;text-align:center">{{ m.text }}</div></sc-if>
+      <sc-if value="{{ m.isOther }}" hint-placeholder-val="{{ true }}"><div style="align-self:flex-start;max-width:80%;background:var(--bubble-in);border-radius:14px;border-top-left-radius:4px;padding:8px 11px;box-shadow:0 1px 1px rgba(0,0,0,.06)"><sc-if value="{{ m.hasAuthor }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;font-weight:700;color:{{ m.authorColor }};margin-bottom:2px">{{ m.author }}</div></sc-if><div style="font-size:15px;color:var(--text);line-height:1.35">{{ m.text }}</div><div style="font-size:10px;color:var(--text-3);text-align:right;margin-top:3px">{{ m.time }}</div></div></sc-if>
+      <sc-if value="{{ m.isMine }}" hint-placeholder-val="{{ false }}"><div style="align-self:flex-end;max-width:80%;background:var(--bubble-out);border-radius:14px;border-top-right-radius:4px;padding:8px 11px"><div style="font-size:15px;color:var(--text);line-height:1.35">{{ m.text }}</div><div style="display:flex;align-items:center;gap:3px;justify-content:flex-end;margin-top:3px"><span style="font-size:10px;color:var(--text-3)">{{ m.time }}</span><sc-if value="{{ m.tickRead }}" hint-placeholder-val="{{ true }}"><span style="font-size:11px;color:var(--accent);font-weight:700">✓✓</span></sc-if><sc-if value="{{ m.tickSent }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;color:var(--text-3)">✓</span></sc-if></div></div></sc-if>
+    </sc-for>
+  </div>
+  <div style="flex-shrink:0;display:flex;align-items:center;gap:8px;padding:8px 12px 28px;background:var(--header);border-top:1px solid var(--sep)">
+    <button style="width:40px;height:40px;border-radius:50%;background:transparent;border:none;display:flex;align-items:center;justify-content:center;color:var(--text-2);cursor:pointer;flex-shrink:0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M20 11l-8 8a5 5 0 01-7-7l8-8a3.5 3.5 0 015 5l-8 8a2 2 0 01-3-3l7-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div style="flex:1;display:flex;align-items:center;gap:8px;background:var(--chip);border-radius:22px;padding:8px 14px"><input value="{{ draft }}" onChange="{{ onDraft }}" onKeyDown="{{ onDraftKey }}" placeholder="Mensagem" style="flex:1;border:none;background:none;outline:none;color:var(--text);font-size:15px" /><svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="color:var(--text-2)"><rect x="3" y="7" width="18" height="13" rx="3" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="13" r="3.2" stroke="currentColor" stroke-width="1.8"/><path d="M8 7l1.5-2h5L16 7" stroke="currentColor" stroke-width="1.8"/></svg></div>
+    <sc-if value="{{ hasDraft }}" hint-placeholder-val="{{ false }}"><button onClick="{{ sendMessage }}" style="width:44px;height:44px;border-radius:50%;background:var(--accent);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 20V5M6 11l6-6 6 6" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button></sc-if>
+    <sc-if value="{{ noDraft }}" hint-placeholder-val="{{ true }}"><button style="width:44px;height:44px;border-radius:50%;background:var(--accent);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="9" y="3" width="6" height="11" rx="3" fill="#fff"/><path d="M5 11a7 7 0 0014 0M12 18v3" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg></button></sc-if>
+  </div>
+</div>
+</sc-if>
+
+<!-- SETTINGS -->
+<sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;flex-direction:column;min-height:0">
+  <div style="padding:60px 20px 6px;background:var(--bg)"><div style="font-size:30px;font-weight:700;color:var(--text)">Configurações</div></div>
+  <div style="flex:1;overflow:auto;background:var(--bg)">
+    <div style="padding:14px 16px">
+      <div style="display:flex;align-items:center;gap:14px;background:var(--card);border-radius:16px;padding:16px;border:1px solid var(--sep)">
+        <div style="width:58px;height:58px;border-radius:50%;background:{{ me.color }};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:20px;flex-shrink:0">{{ me.initial }}</div>
+        <div style="flex:1;min-width:0"><div style="font-size:18px;font-weight:700;color:var(--text)">{{ me.name }}</div><div style="font-size:13px;color:var(--text-2);margin-top:1px">{{ me.role }}</div><div style="font-size:12px;color:var(--text-3);margin-top:1px">{{ me.email }}</div></div>
+      </div>
+    </div>
+    <div style="padding:8px 20px 6px;font-size:13px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.4px">Aparência</div>
+    <div style="margin:0 16px;background:var(--card);border-radius:16px;padding:12px;border:1px solid var(--sep)">
+      <div style="display:flex;gap:8px">
+        <button onClick="{{ setLight }}" style="flex:1;padding:11px;border-radius:12px;border:1.5px solid {{ lightBorder }};background:{{ lightBg }};color:{{ lightColor }};font-weight:600;font-size:14px;cursor:pointer">☀︎ Claro</button>
+        <button onClick="{{ setDark }}" style="flex:1;padding:11px;border-radius:12px;border:1.5px solid {{ darkBorder }};background:{{ darkBg }};color:{{ darkColor }};font-weight:600;font-size:14px;cursor:pointer">☾ Escuro</button>
+      </div>
+    </div>
+    <div style="padding:16px 20px 6px;font-size:13px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.4px">Notificações</div>
+    <div style="margin:0 16px;background:var(--card);border-radius:16px;overflow:hidden;border:1px solid var(--sep)">
+      <div style="display:flex;align-items:center;padding:14px 16px;border-bottom:1px solid var(--sep)"><span style="flex:1;font-size:16px;color:var(--text)">Notificações push</span><div style="width:44px;height:26px;border-radius:13px;background:var(--accent);position:relative"><div style="position:absolute;top:2px;right:2px;width:22px;height:22px;border-radius:50%;background:#fff"></div></div></div>
+      <div style="display:flex;align-items:center;padding:14px 16px"><span style="flex:1;font-size:16px;color:var(--text)">Som de mensagens</span><div style="width:44px;height:26px;border-radius:13px;background:var(--chip);position:relative"><div style="position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2)"></div></div></div>
+    </div>
+    <div style="padding:20px 16px 8px"><button onClick="{{ logout }}" style="width:100%;background:var(--card);border:1px solid var(--sep);border-radius:16px;padding:15px;color:var(--danger);font-size:16px;font-weight:600;cursor:pointer">Sair</button></div>
+    <div style="height:8px"></div>
+  </div>
+  <div style="flex-shrink:0;display:flex;background:var(--header);border-top:1px solid var(--sep);padding:8px 0 26px">
+    <button onClick="{{ goModulos }}" style="flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;color:{{ tabModulosColor }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="8.5" cy="8" r="3" stroke="currentColor" stroke-width="1.9"/><path d="M2.5 19c0-3 2.7-5 6-5s6 2 6 5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><path d="M16 6.4a2.8 2.8 0 010 5.2M18.6 18.6c-.2-1.9-1.1-3.3-2.5-4.1" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg><span style="font-size:11px;font-weight:600">Módulos</span></button>
+    <button onClick="{{ goAtendimento }}" style="flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;color:{{ tabAtendimentoColor }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 13v-1a7 7 0 0114 0v1" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><rect x="2.6" y="12.5" width="3.8" height="7" rx="1.9" stroke="currentColor" stroke-width="1.9"/><rect x="17.6" y="12.5" width="3.8" height="7" rx="1.9" stroke="currentColor" stroke-width="1.9"/><path d="M19.5 19.5v.4a3 3 0 01-3 3H14" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg><span style="font-size:11px;font-weight:600">Atend.</span></button>
+    <button onClick="{{ goChats }}" style="flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;color:{{ tabChatsColor }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H9l-4 4V5z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></svg><span style="font-size:11px;font-weight:600">Chats</span></button>
+    <button onClick="{{ goConfig }}" style="flex:1;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;color:{{ tabConfigColor }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3.2" stroke="currentColor" stroke-width="1.9"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg><span style="font-size:11px;font-weight:600">Config</span></button>
+  </div>
+</div>
+</sc-if>
+
+</div>
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:402,&quot;height&quot;:874},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#9079d7&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#9079d7&quot;,&quot;#25D366&quot;,&quot;#0a7cff&quot;,&quot;#e0864f&quot;],&quot;section&quot;:&quot;Marca&quot;}}">
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    const C={purple:'#9079d7',orange:'#e0864f',teal:'#3f9d8f',pink:'#c85c8e',blue:'#5b8def',gold:'#c9a227',gray:'#7a7f87',red:'#d15b5b'};
+    this.C=C;
+    this.me={id:'me',name:'Ana Prado',role:'Recepção · Yago',initial:'AP',color:C.purple,email:'ana.prado@yago.com'};
+    this.users=[
+      {id:'u2',name:'Bruno Aguiar',role:'Governança',initial:'BA',color:C.teal,online:true},
+      {id:'u3',name:'Carla Nunes',role:'Supervisão · Atendimento',initial:'CN',color:C.pink,online:true,admin:true},
+      {id:'u4',name:'Diego Matos',role:'Manutenção',initial:'DM',color:C.gray,online:false},
+      {id:'u5',name:'Elisa Rocha',role:'Mídia & Marketing',initial:'ER',color:C.orange,online:true},
+      {id:'u6',name:'Fábio Lima',role:'Recepção',initial:'FL',color:C.blue,online:false},
+      {id:'u7',name:'Gabriela Souza',role:'Reservas',initial:'GS',color:C.gold,online:true},
+      {id:'u8',name:'Heitor Alves',role:'TI',initial:'HA',color:C.red,online:false}
+    ];
+    this.communities=[
+      {id:'m1',name:'Yago Colaborador',initial:'YC',color:C.purple,unread:3},
+      {id:'m2',name:'yStorage',initial:'yS',color:C.teal,unread:0}
+    ];
+    this.channelsList=[
+      {id:'c1',name:'Yago',initial:'Y',color:C.orange,unread:4,product:'App do Hóspede'},
+      {id:'c2',name:'Porto Seguro Shopping',initial:'PS',color:C.blue,unread:0,product:'App / Totem'}
+    ];
+    this.moduleContent={
+      m1:{ann:{last:'Carla Nunes: Novo protocolo de check-in a partir de segunda.',date:'09:12'},
+        myGroups:[
+          {id:'grp-recepcao',name:'Equipe Recepção',initial:'ER',color:C.purple,last:'Fábio: Alguém cobre o turno da noite?',time:'08:47',unread:2,muted:false},
+          {id:'grp-midia',name:'Mídia',initial:'MI',color:C.orange,last:'Elisa: Fotos da suíte master prontas',time:'Ontem',unread:0,muted:false},
+          {id:'grp-governanca',name:'Governança',initial:'GO',color:C.teal,last:'Bruno: Enxoval reposto no 3º andar.',time:'Ter',unread:0,muted:true}
+        ],
+        joinable:[{id:'jn-manut',name:'Manutenção',members:12,initial:'MA',color:C.gray},{id:'jn-reservas',name:'Reservas',members:8,initial:'RE',color:C.gold}]},
+      m2:{ann:{last:'Diego Matos: Inventário do galpão atualizado.',date:'Ontem'},
+        myGroups:[
+          {id:'grp-storage-op',name:'Operação yStorage',initial:'OP',color:C.teal,last:'Diego: Coleta agendada para as 15h.',time:'11:20',unread:1,muted:false},
+          {id:'grp-storage-sup',name:'Suporte Interno',initial:'SI',color:C.gray,last:'Heitor: Deploy concluído',time:'Ontem',unread:0,muted:false}
+        ],
+        joinable:[{id:'jn-fin',name:'Financeiro',members:5,initial:'FI',color:C.blue}]}
+    };
+    this.extraChats={
+      'grp-storage-op':{id:'grp-storage-op',type:'group',name:'Operação yStorage',initial:'OP',color:C.teal,context:'yStorage'},
+      'grp-storage-sup':{id:'grp-storage-sup',type:'group',name:'Suporte Interno',initial:'SI',color:C.gray,context:'yStorage'}
+    };
+    this.threadReg={};
+    this.reg={};
+    this.state={
+      theme:'light',authed:false,authScreen:'splash',
+      email:this.me.email,pass:'senha1234',loginErr:'',loginLoading:false,
+      forgotEmail:'',forgotSent:false,
+      tab:'modulos',
+      stacks:{modulos:[{s:'moduleList'}],atendimento:[{s:'channelList'}],chats:[{s:'chatList'}],config:[{s:'settings'}]},
+      queueTab:'aguardando',draft:'',chatQuery:'',dirQuery:'',
+      queues:{
+        c1:{aguardando:[
+          {id:'w1',name:'Marina Costa',initial:'MC',color:C.pink,preview:'A chave digital não abriu o quarto 207.',time:'09:31'},
+          {id:'w2',name:'Rafael Dias',initial:'RD',color:C.blue,preview:'Tem estacionamento para vans grandes?',time:'09:28'},
+          {id:'w3',name:'Sofia Meireles',initial:'SM',color:C.gold,preview:'Consigo early check-in amanhã?',time:'09:15'}
+        ],atendimento:[
+          {id:'att-pedro',name:'Pedro Antunes',initial:'PA',color:C.orange,preview:'Consigo estender o checkout até 14h?',time:'09:05',assignedTo:'Você'},
+          {id:'att-joao',name:'João Pádua',initial:'JP',color:C.teal,preview:'Ok, vou verificar a disponibilidade.',time:'09:02',assignedTo:'Carla Nunes'}
+        ],resolvidas:[
+          {id:'att-lucia',name:'Lúcia Faria',initial:'LF',color:C.purple,preview:'Obrigada, resolvido!',time:'Ontem',assignedTo:'Fábio Lima'}
+        ]},
+        c2:{aguardando:[],atendimento:[],resolvidas:[
+          {id:'att-totem',name:'Cliente Totem 04',initial:'T4',color:C.gray,preview:'Onde fica a loja âncora?',time:'Ontem',assignedTo:'Carla Nunes'}
+        ]}
+      },
+      chats:[
+        {id:'dm-bruno',type:'dm',name:'Bruno Aguiar',initial:'BA',color:C.teal,online:true,preview:'Perfeito, obrigado!',time:'09:20',unread:0,muted:false,context:''},
+        {id:'grp-recepcao',type:'group',name:'Equipe Recepção',initial:'ER',color:C.purple,preview:'Fábio: Alguém cobre o turno da noite?',time:'08:47',unread:2,muted:false,context:'Yago Colaborador'},
+        {id:'att-pedro',type:'attendance',name:'Pedro Antunes',initial:'PA',color:C.orange,preview:'Consigo estender o checkout até 14h?',time:'09:05',unread:1,muted:false,context:'Yago · App do Hóspede',product:'App do Hóspede',status:'atendimento',assignedTo:'Você'},
+        {id:'dm-carla',type:'dm',name:'Carla Nunes',initial:'CN',color:C.pink,online:true,preview:'Vejo em 5 min 👍',time:'Ontem',unread:0,muted:false,context:''},
+        {id:'grp-midia',type:'group',name:'Mídia',initial:'MI',color:C.orange,preview:'Elisa: Fotos da suíte master prontas',time:'Ontem',unread:0,muted:false,context:'Yago Colaborador'},
+        {id:'dm-gabriela',type:'dm',name:'Gabriela Souza',initial:'GS',color:C.gold,online:false,preview:'Reserva confirmada ✔',time:'Ter',unread:0,muted:true,context:''},
+        {id:'grp-governanca',type:'group',name:'Governança',initial:'GO',color:C.teal,preview:'Bruno: Enxoval reposto no 3º andar.',time:'Ter',unread:0,muted:true,context:'Yago Colaborador'}
+      ],
+      threads:{
+        'dm-bruno':[
+          {id:1,other:true,text:'Ana, consegue confirmar o late check-out do 512?',time:'09:14'},
+          {id:2,mine:true,text:'Confirmado até as 13h. Já avisei a governança.',time:'09:18',ticks:'read'},
+          {id:3,other:true,text:'Perfeito, obrigado!',time:'09:20'}
+        ],
+        'grp-recepcao':[
+          {id:1,system:true,text:'Você entrou no grupo'},
+          {id:2,other:true,author:'Fábio Lima',authorColor:C.blue,text:'Bom dia! Alguém cobre o turno da noite?',time:'08:45'},
+          {id:3,other:true,author:'Gabriela Souza',authorColor:C.gold,text:'Eu consigo até as 22h.',time:'08:46'},
+          {id:4,mine:true,text:'Fecho o restante com o Diego 👍',time:'08:47',ticks:'read'}
+        ],
+        'att-pedro':[
+          {id:1,system:true,text:'Conversa assumida por Você'},
+          {id:2,other:true,author:'Pedro Antunes',authorColor:C.orange,text:'Oi! Consigo estender o checkout até 14h?',time:'09:05'},
+          {id:3,mine:true,text:'Olá, Pedro! Deixa eu verificar a disponibilidade da suíte.',time:'09:06',ticks:'read'}
+        ],
+        'dm-carla':[{id:1,other:true,text:'Passo aí na recepção já já.',time:'Ontem'},{id:2,mine:true,text:'Combinado. Vejo em 5 min 👍',time:'Ontem',ticks:'read'}],
+        'grp-midia':[{id:1,other:true,author:'Elisa Rocha',authorColor:C.orange,text:'Fotos da suíte master prontas 📸',time:'Ontem'}],
+        'dm-gabriela':[{id:1,other:true,text:'Reserva confirmada ✔',time:'Ter'}],
+        'grp-governanca':[{id:1,other:true,author:'Bruno Aguiar',authorColor:C.teal,text:'Enxoval reposto no 3º andar.',time:'Ter'}],
+        'grp-storage-op':[{id:1,other:true,author:'Diego Matos',authorColor:C.gray,text:'Coleta agendada para as 15h.',time:'11:20'}],
+        'grp-storage-sup':[{id:1,other:true,author:'Heitor Alves',authorColor:C.red,text:'Deploy concluído ✅',time:'Ontem'}]
+      }
+    };
+  }
+  componentDidMount(){ this._t=setTimeout(()=>{ if(!this.state.authed) this.setState({authScreen:'login'}); },1700); }
+  componentWillUnmount(){ clearTimeout(this._t); }
+  onField(k){ return (e)=>this.setState({[k]:e.target.value}); }
+  push(e){ this.setState(s=>{const st={...s.stacks};st[s.tab]=[...st[s.tab],e];return {stacks:st};}); }
+  back(){ this.setState(s=>{const st={...s.stacks};if(st[s.tab].length>1)st[s.tab]=st[s.tab].slice(0,-1);return {stacks:st};}); }
+  setTab(tab){ this.setState(s=>{ if(s.tab===tab){const st={...s.stacks};st[tab]=[st[tab][0]];return {stacks:st,tab};} return {tab}; }); }
+  doLogin(){ if(!this.state.email.trim()||!this.state.pass){this.setState({loginErr:'Preencha email e senha para continuar.'});return;} this.setState({loginErr:'',loginLoading:true}); setTimeout(()=>this.setState({loginLoading:false,authed:true}),850); }
+  goForgot(){ this.setState({authScreen:'forgot',forgotSent:false,forgotEmail:this.state.email}); }
+  backToLogin(){ this.setState({authScreen:'login'}); }
+  sendForgot(){ this.setState({forgotSent:true}); }
+  openCommunity(id){ this.push({s:'community',moduleId:id}); }
+  openChannel(id){ this.setState({queueTab:'aguardando'}); this.push({s:'atendimento',channelId:id}); }
+  setQueueTab(t){ this.setState({queueTab:t}); }
+  markRead(id){ this.setState(s=>({chats:s.chats.map(c=>c.id===id?{...c,unread:0}:c)})); }
+  openChat(id){ this.markRead(id); this.push({s:'chat',chatId:id}); }
+  lookup(id){ return this.state.chats.find(c=>c.id===id)||this.extraChats[id]||this.reg[id]||null; }
+  thread(id){ return this.state.threads[id]||this.threadReg[id]||[]; }
+  assume(chId,item){
+    const chatId=item.id.indexOf('att-')===0?item.id:('att-'+item.id);
+    const ch=this.channelsList.find(c=>c.id===chId);
+    this.setState(s=>{
+      const q={...s.queues}; const cq={aguardando:[...q[chId].aguardando],atendimento:[...q[chId].atendimento],resolvidas:[...q[chId].resolvidas]};
+      cq.aguardando=cq.aguardando.filter(x=>x.id!==item.id);
+      cq.atendimento=[{...item,id:chatId,assignedTo:'Você'},...cq.atendimento]; q[chId]=cq;
+      const chatObj={id:chatId,type:'attendance',name:item.name,initial:item.initial,color:item.color,preview:item.preview,time:item.time,unread:0,muted:false,context:ch.name+' · '+ch.product,product:ch.product,status:'atendimento',assignedTo:'Você'};
+      const chats=[chatObj,...s.chats.filter(c=>c.id!==chatId)];
+      const threads={...s.threads}; if(!threads[chatId]) threads[chatId]=[{id:1,system:true,text:'Conversa assumida por Você'},{id:2,other:true,author:item.name,authorColor:item.color,text:item.preview,time:item.time}];
+      const st={...s.stacks}; st[s.tab]=[...st[s.tab],{s:'chat',chatId:chatId}];
+      return {queues:q,chats:chats,threads:threads,stacks:st};
+    });
+  }
+  openQueueItem(chId,item){
+    const ch=this.channelsList.find(c=>c.id===chId);
+    const id=item.id;
+    if(!this.state.threads[id]&&!this.threadReg[id]){
+      const sys=item.assignedTo?('Conversa assumida por '+item.assignedTo):'';
+      const arr=[]; if(sys)arr.push({id:1,system:true,text:sys}); arr.push({id:2,other:true,author:item.name,authorColor:item.color,text:item.preview,time:item.time});
+      this.threadReg[id]=arr;
+    }
+    const resolved=this.state.queues[chId].resolvidas.some(x=>x.id===id);
+    this.reg[id]={id:id,type:'attendance',name:item.name,initial:item.initial,color:item.color,context:ch.name+' · '+ch.product,product:ch.product,status:resolved?'resolvida':'atendimento',assignedTo:item.assignedTo};
+    this.push({s:'chat',chatId:id});
+  }
+  startDM(u){
+    const id='dm-'+u.id;
+    this.setState(s=>{
+      let chats=s.chats; const threads={...s.threads};
+      if(!chats.find(c=>c.id===id)){ chats=[{id:id,type:'dm',name:u.name,initial:u.initial,color:u.color,online:u.online,preview:'Toque para conversar',time:'agora',unread:0,muted:false,context:''},...chats]; }
+      if(!threads[id]) threads[id]=[];
+      const st={...s.stacks}; st.chats=[st.chats[0],{s:'chat',chatId:id}];
+      return {chats:chats,threads:threads,stacks:st,tab:'chats'};
+    });
+  }
+  onDraft(e){ this.setState({draft:e.target.value}); }
+  onDraftKey(e){ if(e.key==='Enter'){ e.preventDefault(); this.sendMessage(); } }
+  sendMessage(){ const d=this.state.draft.trim(); if(!d)return; const st=this.state.stacks[this.state.tab]; const top=st[st.length-1]; const id=top.chatId; if(!id)return; this.setState(s=>{const threads={...s.threads}; const arr=(threads[id]||this.threadReg[id]||[]).slice(); arr.push({id:Date.now(),mine:true,text:d,time:'agora',ticks:'sent'}); threads[id]=arr; return {threads:threads,draft:''};}); }
+  markResolved(){ const st=this.state.stacks[this.state.tab]; const top=st[st.length-1]; const id=top.chatId; this.setState(s=>{ const chats=s.chats.map(c=>c.id===id?{...c,status:'resolvida'}:c); const threads={...s.threads}; const arr=(threads[id]||[]).slice(); arr.push({id:Date.now(),system:true,text:'Conversa marcada como resolvida por Você'}); threads[id]=arr; const q={...s.queues}; Object.keys(q).forEach(k=>{ if(q[k].atendimento.some(x=>x.id===id)){ const c=s.chats.find(x=>x.id===id); q[k]={aguardando:q[k].aguardando,atendimento:q[k].atendimento.filter(x=>x.id!==id),resolvidas:[{id:id,name:c.name,initial:c.initial,color:c.color,preview:c.preview,time:c.time,assignedTo:'Você'},...q[k].resolvidas]}; } }); return {chats:chats,threads:threads,queues:q}; }); }
+  setTheme(m){ this.setState({theme:m}); }
+  logout(){ this.setState({authed:false,authScreen:'login',stacks:{modulos:[{s:'moduleList'}],atendimento:[{s:'channelList'}],chats:[{s:'chatList'}],config:[{s:'settings'}]},tab:'modulos'}); }
+  renderVals(){
+    const s=this.state, me=this.me;
+    const isDark=s.theme==='dark', themeLight=s.theme==='light', themeDark=s.theme==='dark';
+    const stack=s.stacks[s.tab]; const top=stack[stack.length-1];
+    const screen=s.authed?top.s:s.authScreen;
+    const is=(x)=>screen===x;
+    const mkOpen=(id)=>()=>this.openChat(id);
+    const cq=s.chatQuery.trim().toLowerCase();
+    const chats=s.chats.filter(c=>!cq||c.name.toLowerCase().includes(cq)||(c.preview||'').toLowerCase().includes(cq)).map(c=>({...c,hasContext:!!c.context,timeColor:c.unread?'var(--accent)':'var(--text-2)',open:mkOpen(c.id)}));
+    const communities=this.communities.map(m=>({...m,open:()=>this.openCommunity(m.id)}));
+    const channels=this.channelsList.map(c=>({...c,waiting:this.state.queues[c.id].aguardando.length,open:()=>this.openChannel(c.id)}));
+    let curModule=null,announcement=null,myGroups=[],joinable=[],hasJoinable=false;
+    if(is('community')){ const m=this.communities.find(x=>x.id===top.moduleId); const ct=this.moduleContent[top.moduleId];
+      curModule={...m}; announcement={...ct.ann,open:mkOpen(ct.myGroups[0].id)};
+      myGroups=ct.myGroups.map(g=>({...g,timeColor:g.unread?'var(--accent)':'var(--text-2)',open:mkOpen(g.id)}));
+      joinable=ct.joinable.map(g=>({...g,open:()=>{}})); hasJoinable=joinable.length>0; }
+    let curChannel=null,queueItems=[],counts={a:0,t:0,r:0},queueEmpty=false,qtA=false,qtT=false,qtR=false;
+    if(is('atendimento')){ const c=this.channelsList.find(x=>x.id===top.channelId); const qq=s.queues[c.id]; const qt=s.queueTab;
+      curChannel={...c}; counts={a:qq.aguardando.length,t:qq.atendimento.length,r:qq.resolvidas.length};
+      qtA=qt==='aguardando';qtT=qt==='atendimento';qtR=qt==='resolvidas';
+      const list=qq[qt]; queueEmpty=list.length===0;
+      queueItems=list.map(it=>({...it,isWaiting:qtA,showAssigned:!qtA,assumeFn:()=>this.assume(c.id,it),open:qtA?(()=>{}):(()=>this.openQueueItem(c.id,it))})); }
+    let curChat=null,messages=[],isAtt=false,isGroup=false,isDM=false,statusText='',statusColor='',assignedText='',showAssume=false,showResolve=false,chatSubtitle='',chatSubtitleColor='var(--text-2)',hasChatContext=false,chatContext='',showSubtitle=false;
+    if(is('chat')){ const c=this.lookup(top.chatId); if(c){ curChat={...c}; isAtt=c.type==='attendance'; isGroup=c.type==='group'; isDM=c.type==='dm';
+      messages=this.thread(c.id).map(m=>({...m,isSystem:!!m.system,isMine:!!m.mine,isOther:!!m.other,hasAuthor:!!m.author,tickRead:m.ticks==='read',tickSent:m.ticks==='sent'}));
+      if(isAtt){ const st=c.status||'atendimento'; statusText=st==='resolvida'?'Resolvida':(st==='atendimento'?'Em atendimento':'Aguardando'); statusColor=st==='resolvida'?'var(--text-2)':(st==='atendimento'?'var(--accent)':'#e0864f'); assignedText=c.assignedTo?('Assumida por '+c.assignedTo):'Não atribuída'; showAssume=st==='aguardando'; showResolve=st==='atendimento'; hasChatContext=true; chatContext=c.context; }
+      else if(isGroup){ hasChatContext=true; chatContext=(c.context?c.context+' › ':'')+c.name; showSubtitle=true; chatSubtitle='digitando…'; chatSubtitleColor='var(--accent)'; }
+      else { showSubtitle=true; chatSubtitle=c.online?'online':'visto por último hoje'; chatSubtitleColor=c.online?'var(--accent)':'var(--text-2)'; } } }
+    const dq=s.dirQuery.trim().toLowerCase();
+    const directory=this.users.filter(u=>!dq||u.name.toLowerCase().includes(dq)||u.role.toLowerCase().includes(dq)).map(u=>({...u,startDM:()=>this.startDM(u)}));
+    return {
+      accentVar:this.props.accent||'#9079d7', themeAttr:s.theme, isDark:isDark,
+      isSplash:!s.authed&&s.authScreen==='splash', isLogin:!s.authed&&s.authScreen==='login', isForgot:!s.authed&&s.authScreen==='forgot',
+      isModuleList:s.authed&&is('moduleList'), isChannelList:s.authed&&is('channelList'), isCommunity:s.authed&&is('community'), isAtendimento:s.authed&&is('atendimento'), channelsEmpty:channels.length===0,
+      isChatList:s.authed&&is('chatList'), isChat:s.authed&&is('chat'), isSettings:s.authed&&is('settings'), isNewConv:s.authed&&is('newConv'),
+      email:s.email, pass:s.pass, loginErr:s.loginErr, hasLoginErr:!!s.loginErr, loginLoading:s.loginLoading, loginIdle:!s.loginLoading,
+      onEmail:this.onField('email'), onPass:this.onField('pass'), doLogin:()=>this.doLogin(), goForgot:()=>this.goForgot(),
+      forgotEmail:s.forgotEmail, forgotSent:s.forgotSent, forgotIdle:!s.forgotSent, onForgotEmail:this.onField('forgotEmail'), sendForgot:()=>this.sendForgot(), backToLogin:()=>this.backToLogin(),
+      back:()=>this.back(), goModulos:()=>this.setTab('modulos'), goAtendimento:()=>this.setTab('atendimento'), goChats:()=>this.setTab('chats'), goConfig:()=>this.setTab('config'),
+      communities:communities, channels:channels,
+      curModule:curModule, announcement:announcement, myGroups:myGroups, joinable:joinable, hasJoinable:hasJoinable,
+      curChannel:curChannel, queueItems:queueItems, counts:counts, queueEmpty:queueEmpty,
+      setQA:()=>this.setQueueTab('aguardando'), setQT:()=>this.setQueueTab('atendimento'), setQR:()=>this.setQueueTab('resolvidas'),
+      qaBg:qtA?'var(--tint)':'transparent', qaColor:qtA?'var(--accent)':'var(--text-2)',
+      qtBg:qtT?'var(--tint)':'transparent', qtColor:qtT?'var(--accent)':'var(--text-2)',
+      qrBg:qtR?'var(--tint)':'transparent', qrColor:qtR?'var(--accent)':'var(--text-2)',
+      chats:chats, chatQuery:s.chatQuery, onChatQuery:this.onField('chatQuery'), chatsEmpty:chats.length===0,
+      directory:directory, dirQuery:s.dirQuery, onDirQuery:this.onField('dirQuery'), openNewConv:()=>this.push({s:'newConv'}),
+      curChat:curChat, messages:messages, isAtt:isAtt, statusText:statusText, statusColor:statusColor, assignedText:assignedText, showAssume:showAssume, showResolve:showResolve,
+      chatSubtitle:chatSubtitle, chatSubtitleColor:chatSubtitleColor, showSubtitle:showSubtitle, hasChatContext:hasChatContext, chatContext:chatContext,
+      draft:s.draft, onDraft:(e)=>this.onDraft(e), onDraftKey:(e)=>this.onDraftKey(e), sendMessage:()=>this.sendMessage(), hasDraft:!!s.draft.trim(), noDraft:!s.draft.trim(), markResolved:()=>this.markResolved(),
+      me:me, setLight:()=>this.setTheme('light'), setDark:()=>this.setTheme('dark'),
+      lightBg:themeLight?'var(--tint)':'transparent', lightColor:themeLight?'var(--accent)':'var(--text)', lightBorder:themeLight?'var(--accent)':'var(--sep)',
+      darkBg:themeDark?'var(--tint)':'transparent', darkColor:themeDark?'var(--accent)':'var(--text)', darkBorder:themeDark?'var(--accent)':'var(--sep)',
+      logout:()=>this.logout(), createModule:()=>{}, addGroup:()=>{},
+      tabModulosColor:s.tab==='modulos'?'var(--accent)':'var(--text-2)', tabAtendimentoColor:s.tab==='atendimento'?'var(--accent)':'var(--text-2)', tabChatsColor:s.tab==='chats'?'var(--accent)':'var(--text-2)', tabConfigColor:s.tab==='config'?'var(--accent)':'var(--text-2)'
+    };
+  }
+}
+</script>
+</body>
+</html>
