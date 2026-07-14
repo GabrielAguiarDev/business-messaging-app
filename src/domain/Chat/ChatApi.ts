@@ -81,6 +81,84 @@ async function sendMessage(
   return message;
 }
 
+function findMessage(chatId: string, messageId: string): MessageAPI {
+  const message = (mockDb.threads[chatId] ?? []).find(m => m.id === messageId);
+  if (!message) {
+    throw new Error('Mensagem não encontrada');
+  }
+  return message;
+}
+
+function previewOf(message: MessageAPI): string {
+  if (message.kind === 'audio') {
+    return '🎤 Mensagem de voz';
+  }
+  if (message.kind === 'image') {
+    return '📷 Foto';
+  }
+  return message.text;
+}
+
+/**
+ * Alterna a MINHA reação na mensagem: mesmo emoji remove; emoji diferente
+ * troca (só uma reação minha por mensagem, como no WhatsApp).
+ */
+async function toggleReaction(
+  chatId: string,
+  messageId: string,
+  emoji: string,
+): Promise<void> {
+  await delay(120);
+  const message = findMessage(chatId, messageId);
+  const reactions = message.reactions ?? [];
+
+  const removedMine = reactions
+    .map(r =>
+      r.reacted_by_me ? {...r, count: r.count - 1, reacted_by_me: false} : r,
+    )
+    .filter(r => r.count > 0);
+
+  const hadMineOnSameEmoji = reactions.some(
+    r => r.emoji === emoji && r.reacted_by_me,
+  );
+  if (hadMineOnSameEmoji) {
+    message.reactions = removedMine.length > 0 ? removedMine : undefined;
+    return;
+  }
+
+  const existing = removedMine.find(r => r.emoji === emoji);
+  message.reactions = existing
+    ? removedMine.map(r =>
+        r.emoji === emoji ? {...r, count: r.count + 1, reacted_by_me: true} : r,
+      )
+    : [...removedMine, {emoji, count: 1, reacted_by_me: true}];
+}
+
+async function toggleStarred(
+  chatId: string,
+  messageId: string,
+): Promise<void> {
+  await delay(120);
+  const message = findMessage(chatId, messageId);
+  message.is_starred = !message.is_starred;
+}
+
+async function deleteMessage(chatId: string, messageId: string): Promise<void> {
+  await delay(150);
+  findMessage(chatId, messageId);
+  const thread = (mockDb.threads[chatId] ?? []).filter(m => m.id !== messageId);
+  mockDb.threads[chatId] = thread;
+
+  // se a apagada era a última, o preview da conversa reflete a nova última
+  const chat =
+    mockDb.chats.find(c => c.id === chatId) ??
+    mockDb.hiddenChats.find(c => c.id === chatId);
+  if (chat) {
+    const last = [...thread].reverse().find(m => m.kind !== 'system');
+    chat.last_message = last ? previewOf(last) : '';
+  }
+}
+
 async function markAsRead(chatId: string): Promise<void> {
   const chat =
     mockDb.chats.find(c => c.id === chatId) ??
@@ -149,6 +227,9 @@ export const chatApi = {
   getChatById,
   getMessages,
   sendMessage,
+  toggleReaction,
+  toggleStarred,
+  deleteMessage,
   markAsRead,
   setMuted,
   deleteChat,

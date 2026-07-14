@@ -30,6 +30,14 @@ export interface MessageReplyAPI {
   kind: MessageKind;
 }
 
+/** Reação de emoji agrupada (long-press na mensagem, estilo WhatsApp). */
+export interface MessageReactionAPI {
+  emoji: string;
+  count: number;
+  /** true quando a minha reação está incluída no count. */
+  reacted_by_me: boolean;
+}
+
 export interface MessageAPI {
   id: string;
   kind: MessageKind;
@@ -39,6 +47,10 @@ export interface MessageAPI {
   author_color?: string;
   time: string;
   ticks?: MessageTicks;
+  /** Reações de emoji agrupadas (long-press). */
+  reactions?: MessageReactionAPI[];
+  /** true quando a mensagem foi favoritada (ação "Favoritar" do menu). */
+  is_starred?: boolean;
   /** Só para kind 'audio': uri local do arquivo gravado (sem backend real, ver ChatApi). */
   audio_uri?: string;
   /** Só para kind 'audio': duração em segundos. */
@@ -77,6 +89,14 @@ export interface MessageReply {
   kind: MessageKind;
 }
 
+/** Reação de emoji agrupada (long-press na mensagem, estilo WhatsApp). */
+export interface MessageReaction {
+  emoji: string;
+  count: number;
+  /** true quando a minha reação está incluída no count. */
+  reactedByMe: boolean;
+}
+
 export interface Message {
   id: string;
   kind: MessageKind;
@@ -85,6 +105,10 @@ export interface Message {
   author?: {name: string; color: string};
   time: string;
   ticks?: MessageTicks;
+  /** Reações de emoji agrupadas (long-press). */
+  reactions?: MessageReaction[];
+  /** true quando a mensagem foi favoritada (ação "Favoritar" do menu). */
+  starred?: boolean;
   audioUri?: string;
   audioDuration?: number;
   imageUri?: string;

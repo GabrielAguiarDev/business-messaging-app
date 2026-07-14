@@ -50,6 +50,10 @@ jest.mock('react-native-nitro-sound', () => ({
   },
 }));
 
+jest.mock('@react-native-clipboard/clipboard', () =>
+  require('@react-native-clipboard/clipboard/jest/clipboard-mock.js'),
+);
+
 jest.mock('react-native-haptic-feedback', () => ({
   __esModule: true,
   trigger: jest.fn(),

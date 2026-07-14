@@ -9,6 +9,7 @@ import {
   Platform,
 } from 'react-native';
 
+import Clipboard from '@react-native-clipboard/clipboard';
 import {GestureDetector, useTapGesture} from 'react-native-gesture-handler';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -18,10 +19,13 @@ import {
   Message,
   MessageReply,
   useChatDelete,
+  useChatDeleteMessage,
   useChatDetails,
   useChatMessages,
   useChatSendMessage,
   useChatToggleMute,
+  useChatToggleReaction,
+  useChatToggleStar,
 } from '@domain';
 import {AppStackScreenProps} from '@routes';
 import {toastService} from '@services';
@@ -29,7 +33,11 @@ import {toastService} from '@services';
 import {AttendanceBanner} from './components/AttendanceBanner';
 import {ChatMenuSheet} from './components/ChatMenuSheet';
 import {Composer} from './components/Composer';
-import {MessageBubble} from './components/MessageBubble';
+import {
+  MessageActionsOverlay,
+  MessageActionsTarget,
+} from './components/MessageActionsOverlay';
+import {BubbleFrame, MessageBubble} from './components/MessageBubble';
 
 export function ChatScreen({
   navigation,
@@ -40,6 +48,8 @@ export function ChatScreen({
   const [draft, setDraft] = useState('');
   const [menuVisible, setMenuVisible] = useState(false);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+  const [actionsTarget, setActionsTarget] =
+    useState<MessageActionsTarget | null>(null);
   const listRef = useRef<FlatList<Message>>(null);
 
   const {chat} = useChatDetails(chatId);
@@ -52,6 +62,15 @@ export function ChatScreen({
   });
   const {deleteChat} = useChatDelete({
     onSuccess: () => navigation.goBack(),
+    onError: error => toastService.show(error.message, 'error'),
+  });
+  const {toggleReaction} = useChatToggleReaction({
+    onError: error => toastService.show(error.message, 'error'),
+  });
+  const {toggleStar} = useChatToggleStar({
+    onError: error => toastService.show(error.message, 'error'),
+  });
+  const {deleteMessage} = useChatDeleteMessage({
     onError: error => toastService.show(error.message, 'error'),
   });
 
@@ -120,6 +139,59 @@ export function ChatScreen({
     setReplyingTo(null);
   }
 
+  /** Long-press na bolha → abre o overlay de ações na posição medida. */
+  function openMessageActions(message: Message, frame: BubbleFrame) {
+    Keyboard.dismiss();
+    setActionsTarget({message, frame});
+  }
+
+  function handleReact(message: Message, emoji: string) {
+    setActionsTarget(null);
+    toggleReaction(chatId, message.id, emoji);
+  }
+
+  function handleReplyAction(message: Message) {
+    setActionsTarget(null);
+    setReplyingTo(message);
+  }
+
+  function handleCopy(message: Message) {
+    Clipboard.setString(message.text);
+    setActionsTarget(null);
+    toastService.show('Mensagem copiada.');
+  }
+
+  function handleToggleStar(message: Message) {
+    setActionsTarget(null);
+    toggleStar(chatId, message.id);
+    toastService.show(
+      message.starred
+        ? 'Mensagem removida das favoritas.'
+        : 'Mensagem favoritada.',
+    );
+  }
+
+  function confirmDeleteMessage(message: Message) {
+    setActionsTarget(null);
+    Alert.alert(
+      'Apagar mensagem',
+      'A mensagem será apagada. Essa ação não pode ser desfeita.',
+      [
+        {text: 'Cancelar', style: 'cancel'},
+        {
+          text: 'Apagar',
+          style: 'destructive',
+          onPress: () => deleteMessage(chatId, message.id),
+        },
+      ],
+    );
+  }
+
+  function handleActionSoon() {
+    setActionsTarget(null);
+    toastService.show('Disponível em breve.');
+  }
+
   /** Tap na citação de uma resposta → rola até a mensagem original. */
   function scrollToMessage(messageId: string) {
     const index = invertedMessages.findIndex(m => m.id === messageId);
@@ -135,6 +207,10 @@ export function ChatScreen({
         message={item}
         onReply={setReplyingTo}
         onQuotePress={scrollToMessage}
+        onLongPress={openMessageActions}
+        onReactionPress={(message, emoji) =>
+          toggleReaction(chatId, message.id, emoji)
+        }
       />
     );
   }
@@ -233,6 +309,19 @@ export function ChatScreen({
           onDelete={confirmDelete}
         />
       )}
+
+      <MessageActionsOverlay
+        target={actionsTarget}
+        onClose={() => setActionsTarget(null)}
+        onReact={handleReact}
+        onPickCustomReaction={handleActionSoon}
+        onReply={handleReplyAction}
+        onForward={handleActionSoon}
+        onCopy={handleCopy}
+        onToggleStar={handleToggleStar}
+        onDelete={confirmDeleteMessage}
+        onMore={handleActionSoon}
+      />
     </Box>
   );
 }

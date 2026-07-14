@@ -15,9 +15,11 @@ export type IconName =
   | 'chevronRight'
   | 'chevronUp'
   | 'close'
+  | 'copy'
   | 'doubleCheck'
   | 'dots'
   | 'file'
+  | 'forward'
   | 'headset'
   | 'image'
   | 'lock'
@@ -36,6 +38,7 @@ export type IconName =
   | 'search'
   | 'send'
   | 'settings'
+  | 'star'
   | 'trash';
 
 export interface IconProps {
@@ -167,6 +170,43 @@ export function Icon({name, size = 24, color = 'text'}: IconProps) {
         stroke={c}
         strokeWidth={2.2}
         strokeLinecap="round"
+      />
+    ),
+    forward: (
+      <>
+        <Path
+          d="M14.5 6 20 11l-5.5 5"
+          stroke={c}
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <Path
+          d="M20 11h-9.5A6.5 6.5 0 004 17.5v.5"
+          stroke={c}
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </>
+    ),
+    copy: (
+      <>
+        <Rect x={8.5} y={8.5} width={12} height={12} rx={2.5} stroke={c} strokeWidth={1.9} />
+        <Path
+          d="M5.5 15.5h-.7A1.8 1.8 0 013 13.7V5.3c0-1 .8-1.8 1.8-1.8h8.4c1 0 1.8.8 1.8 1.8v.7"
+          stroke={c}
+          strokeWidth={1.9}
+          strokeLinecap="round"
+        />
+      </>
+    ),
+    star: (
+      <Path
+        d="M12 3.6l2.6 5.5 6 .7-4.4 4.1 1.2 6-5.4-3-5.4 3 1.2-6L3.4 9.8l6-.7L12 3.6z"
+        stroke={c}
+        strokeWidth={1.8}
+        strokeLinejoin="round"
       />
     ),
     reply: (

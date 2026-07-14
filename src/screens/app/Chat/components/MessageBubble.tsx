@@ -1,6 +1,6 @@
-import React, {useCallback} from 'react';
+import React, {useCallback, useRef} from 'react';
 
-import {Image, ImageStyle, ViewStyle} from 'react-native';
+import {Image, ImageStyle, Pressable, TextStyle, View, ViewStyle} from 'react-native';
 
 import {GestureDetector, usePanGesture} from 'react-native-gesture-handler';
 import {trigger as triggerHaptic} from 'react-native-haptic-feedback';
@@ -24,12 +24,24 @@ const REPLY_TRIGGER = 52;
 /** Depois daqui o arrasto ganha resistência — a bolha não acompanha o dedo 1:1. */
 const MAX_DRAG = 72;
 
+/** Posição da bolha em coordenadas de janela, medida no long-press. */
+export interface BubbleFrame {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 interface MessageBubbleProps {
   message: Message;
   /** Quando presente, habilita o swipe-to-reply (estilo WhatsApp/Instagram). */
   onReply?: (message: Message) => void;
   /** Tocar na citação de uma resposta rola a lista até a mensagem original. */
   onQuotePress?: (messageId: string) => void;
+  /** Segurar a bolha abre o menu de ações (overlay) na posição medida. */
+  onLongPress?: (message: Message, frame: BubbleFrame) => void;
+  /** Tocar num chip de reação alterna a minha reação naquele emoji. */
+  onReactionPress?: (message: Message, emoji: string) => void;
 }
 
 function MessageContent({message}: {message: Message}) {
@@ -74,7 +86,69 @@ function ReplyQuote({
   );
 }
 
-export function MessageBubble({message, onReply, onQuotePress}: MessageBubbleProps) {
+/** Chips de reação sobrepostos à borda inferior da bolha (estilo WhatsApp). */
+function ReactionChips({
+  message,
+  onPress,
+}: {
+  message: Message;
+  onPress?: (message: Message, emoji: string) => void;
+}) {
+  return (
+    <Box
+      flexDirection="row"
+      gap="s4"
+      alignSelf={message.isMine ? 'flex-end' : 'flex-start'}
+      paddingHorizontal="s6"
+      style={$reactionsRow}>
+      {message.reactions?.map(reaction => (
+        <TouchableOpacityBox
+          key={reaction.emoji}
+          onPress={onPress ? () => onPress(message, reaction.emoji) : undefined}
+          disabled={!onPress}
+          activeOpacity={0.7}
+          flexDirection="row"
+          alignItems="center"
+          gap="s2"
+          backgroundColor="surface"
+          borderRadius="full"
+          paddingHorizontal="s6"
+          paddingVertical="s2"
+          borderWidth={1}
+          borderColor={reaction.reactedByMe ? 'primary' : 'separator'}>
+          <Text style={$reactionEmoji}>{reaction.emoji}</Text>
+          {reaction.count > 1 && (
+            <Text variant="tiny" color="textSecondary">
+              {reaction.count}
+            </Text>
+          )}
+        </TouchableOpacityBox>
+      ))}
+    </Box>
+  );
+}
+
+export function MessageBubble({
+  message,
+  onReply,
+  onQuotePress,
+  onLongPress,
+  onReactionPress,
+}: MessageBubbleProps) {
+  const pressableRef = useRef<View>(null);
+  /** true enquanto um swipe-to-reply está em curso — bloqueia o long-press. */
+  const isSwipingRef = useRef(false);
+
+  const handleLongPress = useCallback(() => {
+    if (!onLongPress || isSwipingRef.current) {
+      return;
+    }
+    triggerHaptic('impactMedium');
+    pressableRef.current?.measureInWindow((x, y, width, height) =>
+      onLongPress(message, {x, y, width, height}),
+    );
+  }, [message, onLongPress]);
+
   if (message.kind === 'system') {
     return (
       <Box
@@ -110,6 +184,7 @@ export function MessageBubble({message, onReply, onQuotePress}: MessageBubblePro
         justifyContent="flex-end"
         gap="s2"
         marginTop="s2">
+        {message.starred && <Icon name="star" size={11} color="textSecondary" />}
         <Text variant="tiny">{message.time}</Text>
         {message.ticks === 'read' && (
           <Icon name="doubleCheck" size={13} color="primary" />
@@ -146,19 +221,48 @@ export function MessageBubble({message, onReply, onQuotePress}: MessageBubblePro
         <ReplyQuote reply={message.replyTo} onPress={onQuotePress} />
       )}
       <MessageContent message={message} />
-      <Text variant="tiny" textAlign="right" marginTop="s2">
-        {message.time}
-      </Text>
+      <Box
+        flexDirection="row"
+        alignItems="center"
+        justifyContent="flex-end"
+        gap="s2"
+        marginTop="s2">
+        {message.starred && <Icon name="star" size={11} color="textSecondary" />}
+        <Text variant="tiny">{message.time}</Text>
+      </Box>
     </Box>
   );
 
+  const withReactions = message.reactions?.length ? (
+    <>
+      {bubble}
+      <ReactionChips message={message} onPress={onReactionPress} />
+    </>
+  ) : (
+    bubble
+  );
+
+  const content = onLongPress ? (
+    <Pressable
+      ref={pressableRef}
+      onLongPress={handleLongPress}
+      delayLongPress={300}>
+      {withReactions}
+    </Pressable>
+  ) : (
+    withReactions
+  );
+
   if (!onReply) {
-    return bubble;
+    return content;
   }
 
   return (
-    <SwipeToReplyRow message={message} onReply={onReply}>
-      {bubble}
+    <SwipeToReplyRow
+      message={message}
+      onReply={onReply}
+      isSwipingRef={isSwipingRef}>
+      {content}
     </SwipeToReplyRow>
   );
 }
@@ -173,10 +277,13 @@ export function MessageBubble({message, onReply, onQuotePress}: MessageBubblePro
 function SwipeToReplyRow({
   message,
   onReply,
+  isSwipingRef,
   children,
 }: {
   message: Message;
   onReply: (message: Message) => void;
+  /** Sinaliza swipe em curso p/ o long-press da bolha não disparar no meio do arrasto. */
+  isSwipingRef?: React.RefObject<boolean>;
   children: React.ReactNode;
 }) {
   const {colors} = useAppTheme();
@@ -184,15 +291,26 @@ function SwipeToReplyRow({
   /** Translação bruta (sem clamp/resistência) — o evento de onFinalize não traz translationX. */
   const rawX = useSharedValue(0);
   const pastTrigger = useSharedValue(false);
+  const swipeStarted = useSharedValue(false);
 
   const hapticTick = useCallback(() => triggerHaptic('impactMedium'), []);
+  // worklets NÃO capturam isSwipingRef (objeto com ref mutável congela — Fase 12);
+  // a escrita acontece do lado JS, via scheduleOnRN destas funções
+  const markSwiping = useCallback(() => {
+    if (isSwipingRef) {
+      isSwipingRef.current = true;
+    }
+  }, [isSwipingRef]);
   const handleRelease = useCallback(
     (finalX: number) => {
+      if (isSwipingRef) {
+        isSwipingRef.current = false;
+      }
       if (finalX >= REPLY_TRIGGER) {
         onReply(message);
       }
     },
-    [onReply, message],
+    [isSwipingRef, onReply, message],
   );
 
   const panGesture = usePanGesture({
@@ -204,6 +322,10 @@ function SwipeToReplyRow({
       const x = Math.max(0, e.translationX);
       rawX.value = x;
       translateX.value = x > MAX_DRAG ? MAX_DRAG + (x - MAX_DRAG) * 0.15 : x;
+      if (!swipeStarted.value && x > 8) {
+        swipeStarted.value = true;
+        scheduleOnRN(markSwiping);
+      }
       if (!pastTrigger.value && x >= REPLY_TRIGGER) {
         pastTrigger.value = true;
         scheduleOnRN(hapticTick);
@@ -216,6 +338,7 @@ function SwipeToReplyRow({
       const finalX = rawX.value;
       rawX.value = 0;
       pastTrigger.value = false;
+      swipeStarted.value = false;
       translateX.value = withTiming(0, {duration: 180});
       scheduleOnRN(handleRelease, finalX);
     },
@@ -264,6 +387,17 @@ const $image: ImageStyle = {
   width: 220,
   height: 220,
   borderRadius: 10,
+};
+
+// sobrepõe os chips à borda inferior da bolha, como no WhatsApp
+const $reactionsRow: ViewStyle = {
+  marginTop: -8,
+  zIndex: 1,
+};
+
+const $reactionEmoji: TextStyle = {
+  fontSize: 12,
+  lineHeight: 16,
 };
 
 const $replyBadge: ViewStyle = {

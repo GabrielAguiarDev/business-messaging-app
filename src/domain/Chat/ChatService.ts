@@ -41,6 +41,38 @@ async function sendMessage({
   return chatAdapter.toMessage(message);
 }
 
+async function toggleReaction({
+  chatId,
+  messageId,
+  emoji,
+}: {
+  chatId: string;
+  messageId: string;
+  emoji: string;
+}): Promise<void> {
+  await chatApi.toggleReaction(chatId, messageId, emoji);
+}
+
+async function toggleStarred({
+  chatId,
+  messageId,
+}: {
+  chatId: string;
+  messageId: string;
+}): Promise<void> {
+  await chatApi.toggleStarred(chatId, messageId);
+}
+
+async function deleteMessage({
+  chatId,
+  messageId,
+}: {
+  chatId: string;
+  messageId: string;
+}): Promise<void> {
+  await chatApi.deleteMessage(chatId, messageId);
+}
+
 async function markAsRead(chatId: string): Promise<void> {
   await chatApi.markAsRead(chatId);
 }
@@ -78,6 +110,9 @@ export const chatService = {
   getChatById,
   getMessages,
   sendMessage,
+  toggleReaction,
+  toggleStarred,
+  deleteMessage,
   markAsRead,
   setMuted,
   deleteChat,

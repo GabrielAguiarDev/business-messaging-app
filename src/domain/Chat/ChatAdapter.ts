@@ -34,6 +34,12 @@ function toMessage(messageAPI: MessageAPI): Message {
     audioUri: messageAPI.audio_uri,
     audioDuration: messageAPI.audio_duration,
     imageUri: messageAPI.image_uri,
+    reactions: messageAPI.reactions?.map(reaction => ({
+      emoji: reaction.emoji,
+      count: reaction.count,
+      reactedByMe: reaction.reacted_by_me,
+    })),
+    starred: messageAPI.is_starred,
     replyTo: messageAPI.reply_to
       ? {
           messageId: messageAPI.reply_to.message_id,
