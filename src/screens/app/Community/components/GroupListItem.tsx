@@ -28,6 +28,7 @@ export function GroupListItem({group, onPress}: GroupListItemProps) {
       <Avatar
         label={group.initials}
         color={group.avatarColor}
+        photoUri={group.avatarUrl}
         shape="circle"
         size={50}
       />

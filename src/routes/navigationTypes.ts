@@ -32,6 +32,7 @@ export type AppStackParamList = {
   CommunityScreen: {moduleId: string};
   AttendanceQueueScreen: {channelId: string};
   NewConversationScreen: undefined;
+  EditProfileScreen: undefined;
   ChatScreen: {chatId: string};
   ChatProfileScreen: {chatId: string};
   /** Escolher a conversa de destino ao encaminhar uma mensagem. */

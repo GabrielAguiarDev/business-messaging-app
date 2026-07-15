@@ -5,6 +5,7 @@ export * from './app/ForwardMessage/ForwardMessageScreen';
 export * from './app/ChatList/ChatListScreen';
 export * from './app/ChatProfile/ChatProfileScreen';
 export * from './app/Community/CommunityScreen';
+export * from './app/EditProfile/EditProfileScreen';
 export * from './app/ModuleList/ModuleListScreen';
 export * from './app/NewConversation/NewConversationScreen';
 export * from './app/Settings/SettingsScreen';

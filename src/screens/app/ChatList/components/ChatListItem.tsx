@@ -118,6 +118,7 @@ export function ChatListItem({
         <Avatar
           label={chat.initials}
           color={chat.avatarColor}
+          photoUri={chat.avatarUrl}
           shape="circle"
           size={52}
         />

@@ -13,6 +13,7 @@ function toChannel(channelAPI: ChannelAPI): Channel {
     name: channelAPI.name,
     initials: channelAPI.initials,
     avatarColor: channelAPI.avatar_color,
+    avatarUrl: channelAPI.avatar_url,
     product: channelAPI.product,
     waitingCount: channelAPI.waiting_count,
   };
@@ -24,6 +25,7 @@ function toQueueItem(itemAPI: QueueItemAPI): QueueItem {
     name: itemAPI.name,
     initials: itemAPI.initials,
     avatarColor: itemAPI.avatar_color,
+    avatarUrl: itemAPI.avatar_url,
     preview: itemAPI.preview,
     time: itemAPI.time,
     assignedTo: itemAPI.assigned_to,

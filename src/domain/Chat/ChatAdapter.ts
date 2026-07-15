@@ -7,6 +7,7 @@ function toChat(chatAPI: ChatAPI): Chat {
     name: chatAPI.name,
     initials: chatAPI.initials,
     avatarColor: chatAPI.avatar_color,
+    avatarUrl: chatAPI.avatar_url,
     lastMessage: chatAPI.last_message,
     lastMessageTime: chatAPI.last_message_time,
     unreadCount: chatAPI.unread_count,

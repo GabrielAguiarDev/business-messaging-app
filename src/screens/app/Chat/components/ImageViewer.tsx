@@ -49,6 +49,9 @@ export interface ImageViewerTarget {
   subtitle: string;
   /** Estado de favorita — pinta a estrela da barra inferior. */
   starred?: boolean;
+  /** Raio do retângulo de origem — ex.: metade do tamanho de um avatar
+   * circular. Default 10 (bolha de mensagem). */
+  cornerRadius?: number;
 }
 
 interface ImageViewerProps {
@@ -335,6 +338,7 @@ export function ImageViewer({
 
   // retângulo final: imagem "contida" na tela, centrada, preservando aspecto
   const frame = current?.frame;
+  const startRadius = current?.cornerRadius ?? 10;
   const aspect =
     current && current.imageHeight > 0
       ? current.imageWidth / current.imageHeight
@@ -358,7 +362,7 @@ export function ImageViewer({
       top: lerp(p, frame?.y ?? 0, targetY),
       width: lerp(p, frame?.width ?? 0, targetW),
       height: lerp(p, frame?.height ?? 0, targetH),
-      borderRadius: lerp(p, 10, 0),
+      borderRadius: lerp(p, startRadius, 0),
       transform: [
         {translateX: panX.value},
         {translateY: dragY.value * p + panY.value},
@@ -386,12 +390,15 @@ export function ImageViewer({
     );
   }
 
-  const actions: {icon: IconName; onPress?: () => void; active?: boolean}[] = [
-    {icon: 'download', onPress: onDownload},
-    {icon: 'forward', onPress: onForward},
-    {icon: 'star', onPress: onToggleStar, active: current.starred},
-    {icon: 'trash', onPress: onDelete},
-  ];
+  const allActions: {icon: IconName; onPress?: () => void; active?: boolean}[] =
+    [
+      {icon: 'download', onPress: onDownload},
+      {icon: 'forward', onPress: onForward},
+      {icon: 'star', onPress: onToggleStar, active: current.starred},
+      {icon: 'trash', onPress: onDelete},
+    ];
+  // sem nenhuma ação (ex.: foto de perfil), a barra inferior nem aparece
+  const actions = allActions.filter(action => action.onPress);
 
   const emojiKeyboardHeight = Math.round(screenH * 0.5);
 
@@ -505,10 +512,9 @@ export function ImageViewer({
           </View>
         )}
 
-        <View style={[styles.bottomBar, {paddingBottom: insets.bottom + 6}]}>
-          {actions
-            .filter(action => action.onPress)
-            .map(action => (
+        {actions.length > 0 && (
+          <View style={[styles.bottomBar, {paddingBottom: insets.bottom + 6}]}>
+            {actions.map(action => (
               <TouchableOpacityBox
                 key={action.icon}
                 onPress={action.onPress}
@@ -524,7 +530,8 @@ export function ImageViewer({
                 />
               </TouchableOpacityBox>
             ))}
-        </View>
+          </View>
+        )}
       </Animated.View>
 
       {/* Teclado de emojis (reação) subindo pela base */}

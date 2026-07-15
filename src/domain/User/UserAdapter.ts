@@ -16,6 +16,7 @@ function toUser(userAPI: UserAPI): User {
     email: userAPI.email,
     initials: initialsOf(userAPI.full_name),
     avatarColor: userAPI.avatar_color,
+    avatarUrl: userAPI.avatar_url,
     isAdmin: userAPI.is_admin,
     online: userAPI.is_online,
   };

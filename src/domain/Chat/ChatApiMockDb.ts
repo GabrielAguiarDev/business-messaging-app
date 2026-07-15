@@ -14,10 +14,10 @@ interface MockDb {
 
 export const mockDb: MockDb = {
   chats: [
-    {id: 'dm-u2', type: 'dm', name: 'Bruno Aguiar', initials: 'BA', avatar_color: '#3f9d8f', last_message: 'Perfeito, obrigado!', last_message_time: '09:20', unread_count: 0, is_muted: false, context: null, is_online: true},
+    {id: 'dm-u2', type: 'dm', name: 'Bruno Aguiar', initials: 'BA', avatar_color: '#3f9d8f', avatar_url: 'https://picsum.photos/seed/bruno-aguiar/900', last_message: 'Perfeito, obrigado!', last_message_time: '09:20', unread_count: 0, is_muted: false, context: null, is_online: true},
     {id: 'grp-recepcao', type: 'group', name: 'Equipe Recepção', initials: 'ER', avatar_color: '#9079d7', last_message: 'Fábio: Alguém cobre o turno da noite?', last_message_time: '08:47', unread_count: 2, is_muted: false, context: 'Yago Colaborador'},
     {id: 'dm-u3', type: 'dm', name: 'Carla Nunes', initials: 'CN', avatar_color: '#c85c8e', last_message: 'Vejo em 5 min 👍', last_message_time: 'Ontem', unread_count: 0, is_muted: false, context: null, is_online: true},
-    {id: 'grp-midia', type: 'group', name: 'Mídia', initials: 'MI', avatar_color: '#e0864f', last_message: 'Elisa: Fotos da suíte master prontas', last_message_time: 'Ontem', unread_count: 0, is_muted: false, context: 'Yago Colaborador'},
+    {id: 'grp-midia', type: 'group', name: 'Mídia', initials: 'MI', avatar_color: '#e0864f', avatar_url: 'https://picsum.photos/seed/grupo-midia/900', last_message: 'Elisa: Fotos da suíte master prontas', last_message_time: 'Ontem', unread_count: 0, is_muted: false, context: 'Yago Colaborador'},
     {id: 'dm-u7', type: 'dm', name: 'Gabriela Souza', initials: 'GS', avatar_color: '#c9a227', last_message: 'Reserva confirmada ✔', last_message_time: 'Ter', unread_count: 0, is_muted: true, context: null, is_online: true},
     {id: 'grp-governanca', type: 'group', name: 'Governança', initials: 'GO', avatar_color: '#3f9d8f', last_message: 'Bruno: Enxoval reposto no 3º andar.', last_message_time: 'Ter', unread_count: 0, is_muted: true, context: 'Yago Colaborador'},
   ],

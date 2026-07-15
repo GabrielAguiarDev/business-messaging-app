@@ -65,6 +65,7 @@ export function NewConversationScreen({
           <Avatar
             label={user.initials}
             color={user.avatarColor}
+            photoUri={user.avatarUrl}
             shape="circle"
             size={50}
           />

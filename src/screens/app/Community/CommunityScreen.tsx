@@ -52,6 +52,7 @@ export function CommunityScreen({
             <Avatar
               label={module.initials}
               color={module.avatarColor}
+              photoUri={module.avatarUrl}
               shape="squircle"
               size={40}
             />
@@ -148,6 +149,7 @@ export function CommunityScreen({
                   <Avatar
                     label={group.initials}
                     color={group.avatarColor}
+                    photoUri={group.avatarUrl}
                     shape="circle"
                     size={50}
                   />

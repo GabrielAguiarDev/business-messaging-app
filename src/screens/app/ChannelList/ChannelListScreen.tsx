@@ -38,6 +38,7 @@ export function ChannelListScreen({
         <Avatar
           label={channel.initials}
           color={channel.avatarColor}
+          photoUri={channel.avatarUrl}
           shape="squircle"
           size={52}
         />

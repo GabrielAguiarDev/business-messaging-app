@@ -98,6 +98,7 @@ export function ForwardMessageScreen({
         <Avatar
           label={chat.initials}
           color={chat.avatarColor}
+          photoUri={chat.avatarUrl}
           shape="circle"
           size={50}
         />

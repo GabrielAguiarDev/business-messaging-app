@@ -5,18 +5,20 @@ import {ScrollView, Switch} from 'react-native';
 import {
   Avatar,
   Box,
+  Icon,
   Screen,
   Text,
   TouchableOpacityBox,
 } from '@components';
 import {useAppTheme} from '@hooks';
+import {AppTabScreenProps} from '@routes';
 import {
   useAuthCredentials,
   useResolvedTheme,
   useSettingsStore,
 } from '@services';
 
-export function SettingsScreen() {
+export function SettingsScreen({navigation}: AppTabScreenProps<'ConfigTab'>) {
   const {authCredentials, removeCredentials} = useAuthCredentials();
   const user = authCredentials?.user;
   const {colors} = useAppTheme();
@@ -36,7 +38,9 @@ export function SettingsScreen() {
         {/* Perfil */}
         {user && (
           <Box paddingHorizontal="s16" paddingTop="s14">
-            <Box
+            <TouchableOpacityBox
+              onPress={() => navigation.navigate('EditProfileScreen')}
+              activeOpacity={0.7}
               flexDirection="row"
               alignItems="center"
               gap="s14"
@@ -48,6 +52,7 @@ export function SettingsScreen() {
               <Avatar
                 label={user.initials}
                 color={user.avatarColor}
+                photoUri={user.avatarUrl}
                 shape="circle"
                 size={58}
               />
@@ -60,7 +65,8 @@ export function SettingsScreen() {
                   {user.email}
                 </Text>
               </Box>
-            </Box>
+              <Icon name="chevronRight" size={18} color="textTertiary" />
+            </TouchableOpacityBox>
           </Box>
         )}
 

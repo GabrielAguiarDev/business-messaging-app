@@ -4,6 +4,8 @@ export interface ChannelAPI {
   name: string;
   initials: string;
   avatar_color: string;
+  /** Foto do canal — ausente quando o avatar é só iniciais. */
+  avatar_url?: string;
   product: string;
   waiting_count: number;
 }
@@ -13,6 +15,8 @@ export interface QueueItemAPI {
   name: string;
   initials: string;
   avatar_color: string;
+  /** Foto do cliente — ausente quando o avatar é só iniciais. */
+  avatar_url?: string;
   preview: string;
   time: string;
   assigned_to?: string;
@@ -30,6 +34,8 @@ export interface Channel {
   name: string;
   initials: string;
   avatarColor: string;
+  /** Foto do canal — ausente quando o avatar é só iniciais. */
+  avatarUrl?: string;
   product: string;
   waitingCount: number;
 }
@@ -39,6 +45,8 @@ export interface QueueItem {
   name: string;
   initials: string;
   avatarColor: string;
+  /** Foto do cliente — ausente quando o avatar é só iniciais. */
+  avatarUrl?: string;
   preview: string;
   time: string;
   assignedTo?: string;

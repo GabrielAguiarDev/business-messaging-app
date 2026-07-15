@@ -16,7 +16,7 @@ const MOCK_CONTENT: Record<string, ModuleContentAPI> = {
     },
     my_groups: [
       {id: 'grp-recepcao', name: 'Equipe Recepção', initials: 'ER', avatar_color: '#9079d7', last_message: 'Fábio: Alguém cobre o turno da noite?', time: '08:47', unread_count: 2, is_muted: false},
-      {id: 'grp-midia', name: 'Mídia', initials: 'MI', avatar_color: '#e0864f', last_message: 'Elisa: Fotos da suíte master prontas', time: 'Ontem', unread_count: 0, is_muted: false},
+      {id: 'grp-midia', name: 'Mídia', initials: 'MI', avatar_color: '#e0864f', avatar_url: 'https://picsum.photos/seed/grupo-midia/900', last_message: 'Elisa: Fotos da suíte master prontas', time: 'Ontem', unread_count: 0, is_muted: false},
       {id: 'grp-governanca', name: 'Governança', initials: 'GO', avatar_color: '#3f9d8f', last_message: 'Bruno: Enxoval reposto no 3º andar.', time: 'Ter', unread_count: 0, is_muted: true},
     ],
     joinable_groups: [

@@ -17,6 +17,7 @@ function toModule(moduleAPI: ModuleAPI): Module {
     name: moduleAPI.name,
     initials: moduleAPI.initials,
     avatarColor: moduleAPI.avatar_color,
+    avatarUrl: moduleAPI.avatar_url,
     unreadCount: moduleAPI.unread_count,
   };
 }
@@ -34,6 +35,7 @@ function toModuleGroup(groupAPI: ModuleGroupAPI): ModuleGroup {
     name: groupAPI.name,
     initials: groupAPI.initials,
     avatarColor: groupAPI.avatar_color,
+    avatarUrl: groupAPI.avatar_url,
     lastMessage: groupAPI.last_message,
     time: groupAPI.time,
     unreadCount: groupAPI.unread_count,
@@ -47,6 +49,7 @@ function toJoinableGroup(groupAPI: JoinableGroupAPI): JoinableGroup {
     name: groupAPI.name,
     initials: groupAPI.initials,
     avatarColor: groupAPI.avatar_color,
+    avatarUrl: groupAPI.avatar_url,
     membersCount: groupAPI.members_count,
   };
 }

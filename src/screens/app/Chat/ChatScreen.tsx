@@ -460,6 +460,7 @@ export function ChatScreen({
               <Avatar
                 label={chat.initials}
                 color={chat.avatarColor}
+                photoUri={chat.avatarUrl}
                 shape="circle"
                 size={38}
               />

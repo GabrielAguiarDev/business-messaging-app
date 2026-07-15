@@ -11,6 +11,7 @@ import {
   ChatProfileScreen,
   ChatScreen,
   CommunityScreen,
+  EditProfileScreen,
   ForwardMessageScreen,
   ModuleListScreen,
   NewConversationScreen,
@@ -83,6 +84,7 @@ export function AppStack() {
         name="NewConversationScreen"
         component={NewConversationScreen}
       />
+      <Stack.Screen name="EditProfileScreen" component={EditProfileScreen} />
       <Stack.Screen
         name="ChatScreen"
         component={ChatScreen}

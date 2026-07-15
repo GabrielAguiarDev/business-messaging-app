@@ -1,5 +1,7 @@
 import React from 'react';
 
+import {Image} from 'react-native';
+
 import {avatarColors} from '@theme';
 
 import {Box} from '../Box/Box';
@@ -10,6 +12,8 @@ export interface AvatarProps {
   label: string;
   /** Cor de fundo (hex bruto vindo do dado); se ausente, deriva do label */
   color?: string;
+  /** Foto do avatar — quando presente, cobre o fundo no lugar das iniciais */
+  photoUri?: string;
   /** 'circle' p/ pessoas e grupos; 'squircle' p/ módulos e canais */
   shape?: 'circle' | 'squircle';
   size?: number;
@@ -24,7 +28,13 @@ export function avatarColorFor(seed: string): string {
   return avatarColors[hash % avatarColors.length];
 }
 
-export function Avatar({label, color, shape = 'circle', size = 50}: AvatarProps) {
+export function Avatar({
+  label,
+  color,
+  photoUri,
+  shape = 'circle',
+  size = 50,
+}: AvatarProps) {
   const backgroundColor = color ?? avatarColorFor(label);
   const borderRadius = shape === 'circle' ? size / 2 : Math.round(size * 0.29);
 
@@ -34,13 +44,22 @@ export function Avatar({label, color, shape = 'circle', size = 50}: AvatarProps)
       height={size}
       alignItems="center"
       justifyContent="center"
+      overflow="hidden"
       style={{backgroundColor, borderRadius}}>
-      <Text
-        fontWeight={shape === 'squircle' ? '700' : '600'}
-        color="primaryContrast"
-        style={{fontSize: Math.round(size * 0.34)}}>
-        {label}
-      </Text>
+      {photoUri ? (
+        <Image
+          source={{uri: photoUri}}
+          resizeMode="cover"
+          style={{width: size, height: size}}
+        />
+      ) : (
+        <Text
+          fontWeight={shape === 'squircle' ? '700' : '600'}
+          color="primaryContrast"
+          style={{fontSize: Math.round(size * 0.34)}}>
+          {label}
+        </Text>
+      )}
     </Box>
   );
 }

@@ -16,3 +16,9 @@ export interface SignInParams {
   email: string;
   password: string;
 }
+
+export interface UpdateProfileParams {
+  name: string;
+  /** Foto nova (uri local) ou existente; ausente remove/mantém sem foto. */
+  avatarUrl?: string;
+}

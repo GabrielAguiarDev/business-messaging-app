@@ -31,4 +31,20 @@ async function requestNewPassword(email: string): Promise<{message: string}> {
   return {message: `Link de redefinição enviado para ${email}`};
 }
 
-export const authApi = {signIn, requestNewPassword};
+interface UpdateProfileParamsAPI {
+  full_name: string;
+  avatar_url?: string;
+}
+
+/**
+ * MOCK — ecoa os campos atualizados. O backend real receberá a foto via
+ * upload (multipart) e devolverá o UserAPI completo.
+ */
+async function updateProfile(
+  params: UpdateProfileParamsAPI,
+): Promise<UpdateProfileParamsAPI> {
+  await delay();
+  return params;
+}
+
+export const authApi = {signIn, requestNewPassword, updateProfile};

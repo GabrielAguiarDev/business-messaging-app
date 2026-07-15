@@ -39,6 +39,7 @@ export function ModuleListScreen({
         <Avatar
           label={module.initials}
           color={module.avatarColor}
+          photoUri={module.avatarUrl}
           shape="squircle"
           size={52}
         />

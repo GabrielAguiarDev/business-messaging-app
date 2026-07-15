@@ -6,6 +6,8 @@ export interface UserAPI {
   department: string;
   email: string;
   avatar_color: string;
+  /** Foto do usuário — ausente quando o avatar é só iniciais. */
+  avatar_url?: string;
   is_admin: boolean;
   is_online: boolean;
 }
@@ -19,6 +21,8 @@ export interface User {
   email: string;
   initials: string;
   avatarColor: string;
+  /** Foto do usuário — ausente quando o avatar é só iniciais. */
+  avatarUrl?: string;
   isAdmin: boolean;
   online: boolean;
 }

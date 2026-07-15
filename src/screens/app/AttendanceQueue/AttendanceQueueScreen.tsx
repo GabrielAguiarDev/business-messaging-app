@@ -84,6 +84,7 @@ export function AttendanceQueueScreen({
         <Avatar
           label={item.initials}
           color={item.avatarColor}
+          photoUri={item.avatarUrl}
           shape="circle"
           size={50}
         />
@@ -142,6 +143,7 @@ export function AttendanceQueueScreen({
               <Avatar
                 label={channel.initials}
                 color={channel.avatarColor}
+                photoUri={channel.avatarUrl}
                 shape="squircle"
                 size={40}
               />

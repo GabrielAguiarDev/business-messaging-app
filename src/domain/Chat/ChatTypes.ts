@@ -10,6 +10,8 @@ export interface ChatAPI {
   name: string;
   initials: string;
   avatar_color: string;
+  /** Foto do contato/grupo — ausente quando o avatar é só iniciais. */
+  avatar_url?: string;
   last_message: string;
   last_message_time: string;
   unread_count: number;
@@ -79,6 +81,8 @@ export interface Chat {
   name: string;
   initials: string;
   avatarColor: string;
+  /** Foto do contato/grupo — ausente quando o avatar é só iniciais. */
+  avatarUrl?: string;
   lastMessage: string;
   lastMessageTime: string;
   unreadCount: number;

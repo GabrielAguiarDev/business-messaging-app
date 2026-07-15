@@ -4,6 +4,8 @@ export interface ModuleAPI {
   name: string;
   initials: string;
   avatar_color: string;
+  /** Foto do módulo — ausente quando o avatar é só iniciais. */
+  avatar_url?: string;
   unread_count: number;
 }
 
@@ -17,6 +19,8 @@ export interface ModuleGroupAPI {
   name: string;
   initials: string;
   avatar_color: string;
+  /** Foto do grupo — ausente quando o avatar é só iniciais. */
+  avatar_url?: string;
   last_message: string;
   time: string;
   unread_count: number;
@@ -28,6 +32,8 @@ export interface JoinableGroupAPI {
   name: string;
   initials: string;
   avatar_color: string;
+  /** Foto do grupo — ausente quando o avatar é só iniciais. */
+  avatar_url?: string;
   members_count: number;
 }
 
@@ -43,6 +49,8 @@ export interface Module {
   name: string;
   initials: string;
   avatarColor: string;
+  /** Foto do módulo — ausente quando o avatar é só iniciais. */
+  avatarUrl?: string;
   unreadCount: number;
 }
 
@@ -56,6 +64,8 @@ export interface ModuleGroup {
   name: string;
   initials: string;
   avatarColor: string;
+  /** Foto do grupo — ausente quando o avatar é só iniciais. */
+  avatarUrl?: string;
   lastMessage: string;
   time: string;
   unreadCount: number;
@@ -67,6 +77,8 @@ export interface JoinableGroup {
   name: string;
   initials: string;
   avatarColor: string;
+  /** Foto do grupo — ausente quando o avatar é só iniciais. */
+  avatarUrl?: string;
   membersCount: number;
 }
 
