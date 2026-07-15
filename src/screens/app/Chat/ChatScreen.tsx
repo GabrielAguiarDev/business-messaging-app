@@ -4,6 +4,7 @@ import {
   Alert,
   FlatList,
   Image,
+  ImageBackground,
   Keyboard,
   KeyboardAvoidingView,
   ListRenderItemInfo,
@@ -16,6 +17,7 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import {GestureDetector, useTapGesture} from 'react-native-gesture-handler';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import backgroundChat from '@assets/background-chat.jpeg';
 import {
   AnchorFrame,
   Avatar,
@@ -478,27 +480,35 @@ export function ChatScreen({
         {chat?.type === 'attendance' && <AttendanceBanner chat={chat} />}
 
         {/* Mensagens */}
-        <GestureDetector gesture={dismissKeyboardTap}>
-          <FlatList
-            ref={listRef}
-            data={invertedMessages}
-            inverted
-            style={$flex}
-            keyExtractor={message => message.id}
-            renderItem={renderItem}
-            contentContainerStyle={$messagesContent}
-            showsVerticalScrollIndicator={false}
-            // scrollToIndex sem getItemLayout falha quando o alvo ainda não
-            // foi medido (fora do render window) — aproxima via offset e o
-            // FlatList tenta de novo sozinho na sequência
-            onScrollToIndexFailed={info => {
-              listRef.current?.scrollToOffset({
-                offset: info.averageItemLength * info.index,
-                animated: true,
-              });
-            }}
-          />
-        </GestureDetector>
+        {/* opacidade baixa mistura a imagem com o chatBackground do tema
+            atrás — atenua no claro e escurece no escuro, sem overlay extra */}
+        <ImageBackground
+          source={backgroundChat}
+          style={$flex}
+          imageStyle={$backgroundImage}
+          resizeMode="cover">
+          <GestureDetector gesture={dismissKeyboardTap}>
+            <FlatList
+              ref={listRef}
+              data={invertedMessages}
+              inverted
+              style={$flex}
+              keyExtractor={message => message.id}
+              renderItem={renderItem}
+              contentContainerStyle={$messagesContent}
+              showsVerticalScrollIndicator={false}
+              // scrollToIndex sem getItemLayout falha quando o alvo ainda não
+              // foi medido (fora do render window) — aproxima via offset e o
+              // FlatList tenta de novo sozinho na sequência
+              onScrollToIndexFailed={info => {
+                listRef.current?.scrollToOffset({
+                  offset: info.averageItemLength * info.index,
+                  animated: true,
+                });
+              }}
+            />
+          </GestureDetector>
+        </ImageBackground>
 
         {/* Composer */}
         <Composer
@@ -566,6 +576,7 @@ function ChatSubtitle({chat}: {chat: Chat}) {
 }
 
 const $flex = {flex: 1};
+const $backgroundImage = {opacity: 0.5};
 // flexGrow: 1 — sem isso o conteúdo tem só a altura das mensagens e o
 // espaço vazio acima não responde ao arrasto/scroll
 const $messagesContent = {padding: 12, gap: 6, flexGrow: 1};
