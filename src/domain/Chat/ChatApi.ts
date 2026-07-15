@@ -2,7 +2,12 @@ import {delay} from '@utils';
 
 import {UserAPI} from '../User';
 import {mockDb, nextMessageId} from './ChatApiMockDb';
-import {ChatAPI, MessageAPI, MessageReplyAPI} from './ChatTypes';
+import {
+  ChatAPI,
+  MessageAPI,
+  MessageForwardAPI,
+  MessageReplyAPI,
+} from './ChatTypes';
 
 /**
  * MOCK stateful — simula o backend de chats sobre `mockDb`.
@@ -38,6 +43,7 @@ async function sendMessage(
     audio?: {uri: string; duration: number};
     image?: {uri: string};
     reply_to?: MessageReplyAPI;
+    forwarded_from?: MessageForwardAPI;
   },
 ): Promise<MessageAPI> {
   await delay(200);
@@ -47,6 +53,7 @@ async function sendMessage(
     time: 'agora',
     ticks: 'sent' as const,
     reply_to: params.reply_to,
+    forwarded_from: params.forwarded_from,
   };
   const message: MessageAPI = params.audio
     ? {

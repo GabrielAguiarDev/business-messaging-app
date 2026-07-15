@@ -316,13 +316,13 @@ export function Composer({
           <TouchableOpacityBox
             onPress={openAttachments}
             activeOpacity={0.75}
-            width={44}
-            height={44}
+            width={52}
+            height={52}
             borderRadius="full"
             backgroundColor="chip"
             alignItems="center"
             justifyContent="center">
-            <Icon name="paperclip" size={20} color="textSecondary" />
+            <Icon name="paperclip" size={22} color="textSecondary" />
           </TouchableOpacityBox>
         </Animated.View>
       )}

@@ -38,6 +38,15 @@ export interface MessageReactionAPI {
   reacted_by_me: boolean;
 }
 
+/**
+ * Origem de uma mensagem encaminhada. Presente só quando a mensagem original
+ * era de OUTRO usuário — encaminhar mensagem própria não carrega referência.
+ */
+export interface MessageForwardAPI {
+  /** Nome do usuário que enviou a mensagem originalmente. */
+  author_name: string;
+}
+
 export interface MessageAPI {
   id: string;
   kind: MessageKind;
@@ -59,6 +68,8 @@ export interface MessageAPI {
   image_uri?: string;
   /** Presente quando esta mensagem é uma resposta a outra. */
   reply_to?: MessageReplyAPI;
+  /** Presente quando esta mensagem foi encaminhada de outro usuário. */
+  forwarded_from?: MessageForwardAPI;
 }
 
 // ── Domínio ───────────────────────────────────────────────────────
@@ -97,6 +108,15 @@ export interface MessageReaction {
   reactedByMe: boolean;
 }
 
+/**
+ * Origem de uma mensagem encaminhada. Presente só quando a mensagem original
+ * era de OUTRO usuário — encaminhar mensagem própria não carrega referência.
+ */
+export interface MessageForward {
+  /** Nome do usuário que enviou a mensagem originalmente. */
+  authorName: string;
+}
+
 export interface Message {
   id: string;
   kind: MessageKind;
@@ -114,6 +134,8 @@ export interface Message {
   imageUri?: string;
   /** Presente quando esta mensagem é uma resposta a outra. */
   replyTo?: MessageReply;
+  /** Presente quando esta mensagem foi encaminhada de outro usuário. */
+  forwardedFrom?: MessageForward;
 }
 
 export interface SendMessageParams {
@@ -125,4 +147,6 @@ export interface SendMessageParams {
   image?: {uri: string};
   /** Presente quando a mensagem responde outra (swipe-to-reply). */
   replyTo?: MessageReply;
+  /** Presente quando a mensagem está sendo encaminhada de outro usuário. */
+  forward?: MessageForward;
 }

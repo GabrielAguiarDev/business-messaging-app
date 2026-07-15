@@ -1,6 +1,7 @@
 export * from './app/AttendanceQueue/AttendanceQueueScreen';
 export * from './app/ChannelList/ChannelListScreen';
 export * from './app/Chat/ChatScreen';
+export * from './app/ForwardMessage/ForwardMessageScreen';
 export * from './app/ChatList/ChatListScreen';
 export * from './app/ChatProfile/ChatProfileScreen';
 export * from './app/Community/CommunityScreen';

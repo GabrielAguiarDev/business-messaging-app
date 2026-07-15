@@ -48,6 +48,9 @@ function toMessage(messageAPI: MessageAPI): Message {
           kind: messageAPI.reply_to.kind,
         }
       : undefined,
+    forwardedFrom: messageAPI.forwarded_from
+      ? {authorName: messageAPI.forwarded_from.author_name}
+      : undefined,
   };
 }
 

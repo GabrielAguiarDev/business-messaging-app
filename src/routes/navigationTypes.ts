@@ -5,6 +5,8 @@ import {
 } from '@react-navigation/native';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 
+import {Message, MessageForward} from '@domain';
+
 // ── Auth ──────────────────────────────────────────────────────────
 export type AuthStackParamList = {
   LoginScreen: undefined;
@@ -32,6 +34,12 @@ export type AppStackParamList = {
   NewConversationScreen: undefined;
   ChatScreen: {chatId: string};
   ChatProfileScreen: {chatId: string};
+  /** Escolher a conversa de destino ao encaminhar uma mensagem. */
+  ForwardMessageScreen: {
+    message: Message;
+    /** Referência ao autor original — ausente ao encaminhar mensagem própria. */
+    forward?: MessageForward;
+  };
 };
 
 /** Telas de detalhe (sem tab bar) */

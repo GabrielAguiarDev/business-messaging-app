@@ -24,6 +24,7 @@ async function sendMessage({
   audio,
   image,
   replyTo,
+  forward,
 }: SendMessageParams): Promise<Message> {
   const message = await chatApi.sendMessage(chatId, {
     text: text?.trim(),
@@ -37,6 +38,7 @@ async function sendMessage({
           kind: replyTo.kind,
         }
       : undefined,
+    forwarded_from: forward ? {author_name: forward.authorName} : undefined,
   });
   return chatAdapter.toMessage(message);
 }

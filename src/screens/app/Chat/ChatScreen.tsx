@@ -248,6 +248,23 @@ export function ChatScreen({
     );
   }
 
+  /**
+   * Encaminhar mantém o vínculo com o autor ORIGINAL:
+   * - mensagem já encaminhada → preserva a referência que ela já carrega
+   *   (reencaminhar não troca o autor pela pessoa do meio da corrente);
+   * - mensagem própria (autoria minha) → vai só o conteúdo, sem referência;
+   * - mensagem de outro usuário → referência ao autor dela.
+   */
+  function handleForward(message: Message) {
+    setActionsTarget(null);
+    const forward = message.forwardedFrom
+      ? message.forwardedFrom
+      : message.isMine
+        ? undefined
+        : {authorName: message.author?.name ?? chat?.name ?? ''};
+    navigation.navigate('ForwardMessageScreen', {message, forward});
+  }
+
   function handleActionSoon() {
     setActionsTarget(null);
     toastService.show('Disponível em breve.');
@@ -372,7 +389,7 @@ export function ChatScreen({
         onClose={() => setActionsTarget(null)}
         onReact={handleReact}
         onReply={handleReplyAction}
-        onForward={handleActionSoon}
+        onForward={handleForward}
         onCopy={handleCopy}
         onToggleStar={handleToggleStar}
         onDelete={confirmDeleteMessage}

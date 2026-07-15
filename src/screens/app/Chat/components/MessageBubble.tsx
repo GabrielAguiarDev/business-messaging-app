@@ -14,7 +14,7 @@ import Animated, {
 import {scheduleOnRN} from 'react-native-worklets';
 
 import {Box, Icon, Text, TouchableOpacityBox} from '@components';
-import {Message, MessageReply} from '@domain';
+import {Message, MessageForward, MessageReply} from '@domain';
 import {useAppTheme} from '@hooks';
 
 import {VoiceMessageBubble} from './VoiceMessageBubble';
@@ -83,6 +83,28 @@ function ReplyQuote({
         {reply.preview}
       </Text>
     </TouchableOpacityBox>
+  );
+}
+
+/**
+ * Cabeçalho de mensagem encaminhada (estilo WhatsApp): ícone + "Encaminhada"
+ * e o nome do usuário que a enviou originalmente. Só aparece quando a mensagem
+ * veio de outro usuário — encaminhar mensagem própria não gera referência.
+ */
+function ForwardedHeader({forward}: {forward: MessageForward}) {
+  return (
+    <Box marginBottom="s6">
+      <Box flexDirection="row" alignItems="center" gap="s4" marginBottom="s6">
+        <Icon name="forward" size={13} color="textSecondary" />
+        <Text variant="captionSmall" color="textSecondary" style={$forwardedLabel}>
+          Encaminhada
+        </Text>
+      </Box>
+      <Text variant="captionSmall" fontWeight="700" numberOfLines={1}>
+        {forward.authorName}
+      </Text>
+      <Box height={1} backgroundColor="separator" marginTop="s6" />
+    </Box>
   );
 }
 
@@ -174,6 +196,9 @@ export function MessageBubble({
       borderTopRightRadius="br4"
       paddingHorizontal="s10"
       paddingVertical="s8">
+      {message.forwardedFrom && (
+        <ForwardedHeader forward={message.forwardedFrom} />
+      )}
       {message.replyTo && (
         <ReplyQuote reply={message.replyTo} onPress={onQuotePress} />
       )}
@@ -216,6 +241,9 @@ export function MessageBubble({
           style={{color: message.author.color}}>
           {message.author.name}
         </Text>
+      )}
+      {message.forwardedFrom && (
+        <ForwardedHeader forward={message.forwardedFrom} />
       )}
       {message.replyTo && (
         <ReplyQuote reply={message.replyTo} onPress={onQuotePress} />
@@ -382,6 +410,10 @@ function SwipeToReplyRow({
 }
 
 const $shadowOffset = {width: 0, height: 1};
+
+const $forwardedLabel: TextStyle = {
+  fontStyle: 'italic',
+};
 
 const $image: ImageStyle = {
   width: 220,

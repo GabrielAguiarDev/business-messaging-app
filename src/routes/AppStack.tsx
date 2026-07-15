@@ -11,6 +11,7 @@ import {
   ChatProfileScreen,
   ChatScreen,
   CommunityScreen,
+  ForwardMessageScreen,
   ModuleListScreen,
   NewConversationScreen,
   SettingsScreen,
@@ -88,6 +89,10 @@ export function AppStack() {
         options={{ fullScreenGestureEnabled: false }}
       />
       <Stack.Screen name="ChatProfileScreen" component={ChatProfileScreen} />
+      <Stack.Screen
+        name="ForwardMessageScreen"
+        component={ForwardMessageScreen}
+      />
     </Stack.Navigator>
   );
 }
