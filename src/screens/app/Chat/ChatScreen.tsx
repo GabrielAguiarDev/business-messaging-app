@@ -371,7 +371,6 @@ export function ChatScreen({
         target={actionsTarget}
         onClose={() => setActionsTarget(null)}
         onReact={handleReact}
-        onPickCustomReaction={handleActionSoon}
         onReply={handleReplyAction}
         onForward={handleActionSoon}
         onCopy={handleCopy}

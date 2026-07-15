@@ -93,29 +93,39 @@ export function MenuCard({
 }
 
 /**
- * Fundo dos menus de contexto: blur real (estilo WhatsApp) + leve
- * escurecimento por cima. Tocar em qualquer lugar dele fecha o menu.
+ * Fundo dos menus de contexto. Tocar em qualquer lugar dele fecha o menu.
+ * - `blur` (mensagens): blur real (estilo WhatsApp) + leve escurecimento.
+ * - sem `blur` (menu do header): fundo totalmente transparente, só o menu.
  */
 export function MenuBackdrop({
   onPress,
+  blur = false,
   children,
 }: {
   onPress: () => void;
+  blur?: boolean;
   children: React.ReactNode;
 }) {
   const isDark = useResolvedTheme() === 'dark';
   return (
     <Pressable style={$flex} onPress={onPress}>
-      <BlurView
-        style={StyleSheet.absoluteFill}
-        blurType={isDark ? 'dark' : 'light'}
-        blurAmount={18}
-        reducedTransparencyFallbackColor={isDark ? '#000000' : '#f2f2f7'}
-      />
-      <View
-        style={[StyleSheet.absoluteFill, isDark ? $dimDark : $dimLight]}
-        pointerEvents="none"
-      />
+      {/* pointerEvents none: o UIVisualEffectView nativo captura o toque e
+          impede o Pressable de fechar ao tocar fora — deixá-lo passar */}
+      {blur && (
+        <>
+          <BlurView
+            style={StyleSheet.absoluteFill}
+            pointerEvents="none"
+            blurType={isDark ? 'dark' : 'light'}
+            blurAmount={18}
+            reducedTransparencyFallbackColor={isDark ? '#000000' : '#f2f2f7'}
+          />
+          <View
+            style={[StyleSheet.absoluteFill, isDark ? $dimDark : $dimLight]}
+            pointerEvents="none"
+          />
+        </>
+      )}
       {children}
     </Pressable>
   );

@@ -8483,6 +8483,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rn-emoji-keyboard@npm:^1.7.0":
+  version: 1.7.0
+  resolution: "rn-emoji-keyboard@npm:1.7.0"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/8c63fb386a1e0cc262e6651716f880dff4820bc7a69b7b8ae618e2b038076162cda452769d8aa3174bea9f5e730b33955e8cebd223d85a002d5320b1b5b93fde
+  languageName: node
+  linkType: hard
+
 "run-parallel@npm:^1.1.9":
   version: 1.2.0
   resolution: "run-parallel@npm:1.2.0"
@@ -9708,6 +9718,7 @@ __metadata:
     react-native-svg: "npm:^15.15.5"
     react-native-worklets: "npm:^0.10.2"
     react-test-renderer: "npm:19.2.3"
+    rn-emoji-keyboard: "npm:^1.7.0"
     typescript: "npm:^5.8.3"
     zod: "npm:^4.4.3"
     zustand: "npm:^5.0.14"
