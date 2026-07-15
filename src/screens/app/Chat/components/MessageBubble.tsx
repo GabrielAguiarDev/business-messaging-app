@@ -1,6 +1,13 @@
-import React, {useCallback, useRef} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 
-import {Image, ImageStyle, Pressable, TextStyle, View, ViewStyle} from 'react-native';
+import {
+  Image,
+  Pressable,
+  TextStyle,
+  View,
+  ViewStyle,
+  useWindowDimensions,
+} from 'react-native';
 
 import {GestureDetector, usePanGesture} from 'react-native-gesture-handler';
 import {trigger as triggerHaptic} from 'react-native-haptic-feedback';
@@ -42,15 +49,165 @@ interface MessageBubbleProps {
   onLongPress?: (message: Message, frame: BubbleFrame) => void;
   /** Tocar num chip de reação alterna a minha reação naquele emoji. */
   onReactionPress?: (message: Message, emoji: string) => void;
+  /**
+   * Tocar numa imagem abre o visualizador em tela cheia (shared element).
+   * `realSize` é o tamanho REAL da foto quando já medido (cache) — evita o
+   * visualizador refazer Image.getSize (lento em URI remota).
+   */
+  onImagePress?: (
+    message: Message,
+    frame: BubbleFrame,
+    realSize?: {width: number; height: number},
+  ) => void;
+  /** Habilita o botão flutuante de encaminhamento rápido em mídias. */
+  onForward?: (message: Message) => void;
 }
 
-function MessageContent({message}: {message: Message}) {
+/** Horário + ticks sobrepostos ao canto inferior direito da imagem (WhatsApp). */
+function ImageTimeOverlay({message}: {message: Message}) {
+  return (
+    <Box
+      position="absolute"
+      bottom={6}
+      right={6}
+      flexDirection="row"
+      alignItems="center"
+      gap="s2"
+      paddingHorizontal="s6"
+      paddingVertical="s2"
+      borderRadius="full"
+      style={$timeScrim}>
+      {message.starred && (
+        <Icon name="star" size={11} color="primaryContrast" />
+      )}
+      <Text variant="tiny" style={$timeOverlayText}>
+        {message.time}
+      </Text>
+      {message.isMine && message.ticks === 'read' && (
+        <Icon name="doubleCheck" size={13} color="primaryContrast" />
+      )}
+      {message.isMine && message.ticks === 'sent' && (
+        <Icon name="check" size={13} color="primaryContrast" />
+      )}
+    </Box>
+  );
+}
+
+/** Botão flutuante de encaminhamento rápido ao lado de mídias (WhatsApp). */
+function QuickForwardButton({onPress}: {onPress: () => void}) {
+  return (
+    <TouchableOpacityBox
+      onPress={onPress}
+      activeOpacity={0.7}
+      width={38}
+      height={38}
+      borderRadius="full"
+      backgroundColor="surface"
+      alignItems="center"
+      justifyContent="center"
+      shadowColor="text"
+      shadowOpacity={0.15}
+      shadowRadius={5}
+      shadowOffset={$forwardShadow}
+      elevation={4}>
+      <Icon name="forward" size={18} color="textSecondary" />
+    </TouchableOpacityBox>
+  );
+}
+
+/**
+ * Tamanho real das imagens já medidas (Image.getSize) — evita a bolha
+ * "pular" de tamanho quando a FlatList recicla/remonta a mensagem.
+ */
+const imageSizeCache = new Map<string, {width: number; height: number}>();
+
+/** Espessura do frame da bolha em volta da foto (padding s4 de cada lado). */
+const IMAGE_FRAME = 4;
+
+/**
+ * Tamanho de EXIBIÇÃO da foto na bolha (estilo WhatsApp): proporção real
+ * (retrato alto, paisagem largo) dentro de uma caixa máxima. O valor é
+ * usado como largura EXPLÍCITA da bolha — nada de maxWidth em % (que,
+ * dentro de pais dimensionados pelo conteúdo, resolve errado e deixa a
+ * imagem vazar pra fora do card).
+ */
+function useChatImageSize(uri: string | undefined, windowWidth: number) {
+  const [size, setSize] = useState(
+    uri ? imageSizeCache.get(uri) ?? null : null,
+  );
+
+  useEffect(() => {
+    if (!uri) {
+      return;
+    }
+    const cached = imageSizeCache.get(uri);
+    if (cached) {
+      setSize(cached);
+      return;
+    }
+    let cancelled = false;
+    Image.getSize(
+      uri,
+      (width, height) => {
+        imageSizeCache.set(uri, {width, height});
+        if (!cancelled) {
+          setSize({width, height});
+        }
+      },
+      // falhou a medição → mantém o fallback quadrado
+      () => {},
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [uri]);
+
+  // caixa máxima: ~65% da tela — folga p/ o botão de encaminhar + paddings
+  const maxW = Math.min(windowWidth * 0.65, 280);
+  const maxH = Math.min(windowWidth * 1.05, 420);
+  const minW = 140;
+
+  const aspect = size && size.height > 0 ? size.width / size.height : 1;
+  let w = maxW;
+  let h = w / aspect;
+  if (h > maxH) {
+    h = maxH;
+    w = h * aspect;
+  }
+  if (w < minW) {
+    // foto muito estreita/alta — trava a largura mínima e deixa o cover cortar
+    w = minW;
+  }
+
+  return {width: Math.round(w), height: Math.round(h)};
+}
+
+/**
+ * Conteúdo da bolha. A imagem recebe um ref no seu container pra que o tap
+ * (tratado no Pressable externo da bolha) meça o retângulo exato e o passe
+ * ao visualizador em tela cheia (transição de shared element).
+ */
+function MessageContent({
+  message,
+  imageRef,
+  imageSize,
+}: {
+  message: Message;
+  imageRef?: React.RefObject<View | null>;
+  imageSize?: {width: number; height: number};
+}) {
   if (message.kind === 'audio') {
     return <VoiceMessageBubble message={message} />;
   }
   if (message.kind === 'image') {
     return (
-      <Image source={{uri: message.imageUri}} style={$image} resizeMode="cover" />
+      <View ref={imageRef} collapsable={false} style={$imageWrap}>
+        <Image
+          source={{uri: message.imageUri}}
+          style={imageSize}
+          resizeMode="cover"
+        />
+      </View>
     );
   }
   return <Text variant="paragraph">{message.text}</Text>;
@@ -156,10 +313,22 @@ export function MessageBubble({
   onQuotePress,
   onLongPress,
   onReactionPress,
+  onImagePress,
+  onForward,
 }: MessageBubbleProps) {
   const pressableRef = useRef<View>(null);
+  const imageRef = useRef<View>(null);
   /** true enquanto um swipe-to-reply está em curso — bloqueia o long-press. */
   const isSwipingRef = useRef(false);
+
+  const {width: windowWidth} = useWindowDimensions();
+  const isImage = message.kind === 'image';
+  const imageSize = useChatImageSize(
+    isImage ? message.imageUri : undefined,
+    windowWidth,
+  );
+  /** Largura EXPLÍCITA da bolha de imagem: foto + frame dos dois lados. */
+  const imageBubbleWidth = imageSize.width + IMAGE_FRAME * 2;
 
   const handleLongPress = useCallback(() => {
     if (!onLongPress || isSwipingRef.current) {
@@ -170,6 +339,19 @@ export function MessageBubble({
       onLongPress(message, {x, y, width, height}),
     );
   }, [message, onLongPress]);
+
+  /** Tap numa mensagem de imagem → mede a imagem e abre o visualizador. */
+  const handlePress = useCallback(() => {
+    if (message.kind !== 'image' || !onImagePress || !message.imageUri) {
+      return;
+    }
+    const uri = message.imageUri;
+    imageRef.current?.measureInWindow((x, y, width, height) =>
+      onImagePress(message, {x, y, width, height}, imageSizeCache.get(uri)),
+    );
+  }, [message, onImagePress]);
+
+  const isImageTappable = isImage && !!onImagePress;
 
   if (message.kind === 'system') {
     return (
@@ -190,74 +372,122 @@ export function MessageBubble({
   const bubble = message.isMine ? (
     <Box
       alignSelf="flex-end"
-      maxWidth="80%"
+      maxWidth={isImage ? undefined : '80%'}
+      width={isImage ? imageBubbleWidth : undefined}
       backgroundColor="bubbleOutgoing"
       borderRadius="br14"
       borderTopRightRadius="br4"
-      paddingHorizontal="s10"
-      paddingVertical="s8">
-      {message.forwardedFrom && (
-        <ForwardedHeader forward={message.forwardedFrom} />
+      paddingHorizontal={isImage ? 's4' : 's10'}
+      paddingVertical={isImage ? 's4' : 's8'}>
+      {/* headers (encaminhada/resposta) ganham respiro extra na bolha de
+          imagem — o frame de 4px é fino demais pra texto encostado */}
+      {(message.forwardedFrom || message.replyTo) && (
+        <Box
+          paddingHorizontal={isImage ? 's6' : 's0'}
+          paddingTop={isImage ? 's4' : 's0'}>
+          {message.forwardedFrom && (
+            <ForwardedHeader forward={message.forwardedFrom} />
+          )}
+          {message.replyTo && (
+            <ReplyQuote reply={message.replyTo} onPress={onQuotePress} />
+          )}
+        </Box>
       )}
-      {message.replyTo && (
-        <ReplyQuote reply={message.replyTo} onPress={onQuotePress} />
+      {isImage ? (
+        <Box>
+          <MessageContent
+            message={message}
+            imageRef={imageRef}
+            imageSize={imageSize}
+          />
+          <ImageTimeOverlay message={message} />
+        </Box>
+      ) : (
+        <>
+          <MessageContent message={message} imageRef={imageRef} />
+          <Box
+            flexDirection="row"
+            alignItems="center"
+            justifyContent="flex-end"
+            gap="s2"
+            marginTop="s2">
+            {message.starred && (
+              <Icon name="star" size={11} color="textSecondary" />
+            )}
+            <Text variant="tiny">{message.time}</Text>
+            {message.ticks === 'read' && (
+              <Icon name="doubleCheck" size={13} color="primary" />
+            )}
+            {message.ticks === 'sent' && (
+              <Icon name="check" size={13} color="textTertiary" />
+            )}
+          </Box>
+        </>
       )}
-      <MessageContent message={message} />
-      <Box
-        flexDirection="row"
-        alignItems="center"
-        justifyContent="flex-end"
-        gap="s2"
-        marginTop="s2">
-        {message.starred && <Icon name="star" size={11} color="textSecondary" />}
-        <Text variant="tiny">{message.time}</Text>
-        {message.ticks === 'read' && (
-          <Icon name="doubleCheck" size={13} color="primary" />
-        )}
-        {message.ticks === 'sent' && (
-          <Icon name="check" size={13} color="textTertiary" />
-        )}
-      </Box>
     </Box>
   ) : (
     <Box
       alignSelf="flex-start"
-      maxWidth="80%"
+      maxWidth={isImage ? undefined : '80%'}
+      width={isImage ? imageBubbleWidth : undefined}
       backgroundColor="bubbleIncoming"
       borderRadius="br14"
       borderTopLeftRadius="br4"
-      paddingHorizontal="s10"
-      paddingVertical="s8"
+      paddingHorizontal={isImage ? 's4' : 's10'}
+      paddingVertical={isImage ? 's4' : 's8'}
       shadowColor="text"
       shadowOpacity={0.06}
       shadowRadius={1}
       shadowOffset={$shadowOffset}
       elevation={1}>
-      {message.author && (
-        <Text
-          variant="captionSmall"
-          fontWeight="700"
-          marginBottom="s2"
-          style={{color: message.author.color}}>
-          {message.author.name}
-        </Text>
+      {/* headers (autor/encaminhada/resposta) ganham respiro extra na bolha
+          de imagem — o frame de 4px é fino demais pra texto encostado */}
+      {(message.author || message.forwardedFrom || message.replyTo) && (
+        <Box
+          paddingHorizontal={isImage ? 's6' : 's0'}
+          paddingTop={isImage ? 's4' : 's0'}>
+          {message.author && (
+            <Text
+              variant="captionSmall"
+              fontWeight="700"
+              marginBottom="s2"
+              style={{color: message.author.color}}>
+              {message.author.name}
+            </Text>
+          )}
+          {message.forwardedFrom && (
+            <ForwardedHeader forward={message.forwardedFrom} />
+          )}
+          {message.replyTo && (
+            <ReplyQuote reply={message.replyTo} onPress={onQuotePress} />
+          )}
+        </Box>
       )}
-      {message.forwardedFrom && (
-        <ForwardedHeader forward={message.forwardedFrom} />
+      {isImage ? (
+        <Box>
+          <MessageContent
+            message={message}
+            imageRef={imageRef}
+            imageSize={imageSize}
+          />
+          <ImageTimeOverlay message={message} />
+        </Box>
+      ) : (
+        <>
+          <MessageContent message={message} imageRef={imageRef} />
+          <Box
+            flexDirection="row"
+            alignItems="center"
+            justifyContent="flex-end"
+            gap="s2"
+            marginTop="s2">
+            {message.starred && (
+              <Icon name="star" size={11} color="textSecondary" />
+            )}
+            <Text variant="tiny">{message.time}</Text>
+          </Box>
+        </>
       )}
-      {message.replyTo && (
-        <ReplyQuote reply={message.replyTo} onPress={onQuotePress} />
-      )}
-      <MessageContent message={message} />
-      <Box
-        flexDirection="row"
-        alignItems="center"
-        justifyContent="flex-end"
-        gap="s2"
-        marginTop="s2">
-        {message.starred && <Icon name="star" size={11} color="textSecondary" />}
-        <Text variant="tiny">{message.time}</Text>
-      </Box>
     </Box>
   );
 
@@ -270,16 +500,41 @@ export function MessageBubble({
     bubble
   );
 
-  const content = onLongPress ? (
-    <Pressable
-      ref={pressableRef}
-      onLongPress={handleLongPress}
-      delayLongPress={300}>
-      {withReactions}
-    </Pressable>
-  ) : (
-    withReactions
-  );
+  const pressable =
+    onLongPress || isImageTappable ? (
+      <Pressable
+        ref={pressableRef}
+        onPress={isImageTappable ? handlePress : undefined}
+        onLongPress={onLongPress ? handleLongPress : undefined}
+        delayLongPress={300}>
+        {withReactions}
+      </Pressable>
+    ) : (
+      withReactions
+    );
+
+  // mídias ganham o botão de encaminhamento rápido ao lado da bolha (WhatsApp);
+  // fica fora do Pressable p/ o tap dele não abrir o visualizador.
+  // alignSelf (e não justifyContent) — a linha encolhe pro tamanho do
+  // conteúdo, deixando a seta colada na bolha e a bolha dentro da margem
+  const content =
+    isImage && onForward ? (
+      <Box
+        flexDirection="row"
+        alignItems="center"
+        gap="s12"
+        alignSelf={message.isMine ? 'flex-end' : 'flex-start'}>
+        {message.isMine && (
+          <QuickForwardButton onPress={() => onForward(message)} />
+        )}
+        {pressable}
+        {!message.isMine && (
+          <QuickForwardButton onPress={() => onForward(message)} />
+        )}
+      </Box>
+    ) : (
+      pressable
+    );
 
   if (!onReply) {
     return content;
@@ -415,11 +670,22 @@ const $forwardedLabel: TextStyle = {
   fontStyle: 'italic',
 };
 
-const $image: ImageStyle = {
-  width: 220,
-  height: 220,
+const $imageWrap: ViewStyle = {
+  alignSelf: 'flex-start',
+  // arredondamento 10 por dentro do frame de 4px da bolha (br14 − 4)
   borderRadius: 10,
+  overflow: 'hidden',
 };
+
+const $timeScrim: ViewStyle = {
+  backgroundColor: 'rgba(0,0,0,0.35)',
+};
+
+const $timeOverlayText: TextStyle = {
+  color: '#fff',
+};
+
+const $forwardShadow = {width: 0, height: 2};
 
 // sobrepõe os chips à borda inferior da bolha, como no WhatsApp
 const $reactionsRow: ViewStyle = {

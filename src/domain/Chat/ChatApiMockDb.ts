@@ -50,6 +50,7 @@ export const mockDb: MockDb = {
     ],
     'grp-midia': [
       {id: '1', kind: 'text', text: 'Fotos da suíte master prontas 📸', is_mine: false, author_name: 'Elisa Rocha', author_color: '#e0864f', time: 'Ontem'},
+      {id: '1b', kind: 'image', text: '', image_uri: 'https://picsum.photos/seed/suite-master/1200/800', is_mine: false, author_name: 'Elisa Rocha', author_color: '#e0864f', time: 'Ontem'},
     ],
     'dm-u7': [
       {id: '1', kind: 'text', text: 'Reserva confirmada ✔', is_mine: false, time: 'Ter'},

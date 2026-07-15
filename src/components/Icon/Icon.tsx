@@ -18,6 +18,7 @@ export type IconName =
   | 'copy'
   | 'doubleCheck'
   | 'dots'
+  | 'download'
   | 'file'
   | 'forward'
   | 'headset'
@@ -308,6 +309,23 @@ export function Icon({name, size = 24, color = 'text'}: IconProps) {
         <Circle cx={5} cy={12} r={2.3} fill={c} />
         <Circle cx={12} cy={12} r={2.3} fill={c} />
         <Circle cx={19} cy={12} r={2.3} fill={c} />
+      </>
+    ),
+    download: (
+      <>
+        <Path
+          d="M12 3.5V14M7.5 9.8l4.5 4.5 4.5-4.5"
+          stroke={c}
+          strokeWidth={2}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <Path
+          d="M4.5 20h15"
+          stroke={c}
+          strokeWidth={2}
+          strokeLinecap="round"
+        />
       </>
     ),
     mic: (

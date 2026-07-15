@@ -3,6 +3,7 @@ import React, {useMemo, useRef, useState} from 'react';
 import {
   Alert,
   FlatList,
+  Image,
   Keyboard,
   KeyboardAvoidingView,
   ListRenderItemInfo,
@@ -10,6 +11,7 @@ import {
   View,
 } from 'react-native';
 
+import {CameraRoll} from '@react-native-camera-roll/camera-roll';
 import Clipboard from '@react-native-clipboard/clipboard';
 import {GestureDetector, useTapGesture} from 'react-native-gesture-handler';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -42,6 +44,7 @@ import {toastService} from '@services';
 
 import {AttendanceBanner} from './components/AttendanceBanner';
 import {Composer} from './components/Composer';
+import {ImageViewer, ImageViewerTarget} from './components/ImageViewer';
 import {
   MessageActionsOverlay,
   MessageActionsTarget,
@@ -61,6 +64,10 @@ export function ChatScreen({
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const [actionsTarget, setActionsTarget] =
     useState<MessageActionsTarget | null>(null);
+  // target do visualizador + a mensagem de origem (ações da barra inferior)
+  const [imageTarget, setImageTarget] = useState<
+    (ImageViewerTarget & {message: Message}) | null
+  >(null);
   const listRef = useRef<FlatList<Message>>(null);
   const menuButtonRef = useRef<View>(null);
 
@@ -279,6 +286,132 @@ export function ChatScreen({
     listRef.current?.scrollToIndex({index, animated: true, viewPosition: 0.5});
   }
 
+  /**
+   * Tap numa imagem → abre o visualizador em tela cheia partindo do
+   * retângulo medido na bolha. A bolha já conhece o tamanho real da foto
+   * (cache) e o envia junto — abre na hora. Sem cache (raro), busca via
+   * Image.getSize; se falhar, assume a proporção do frame.
+   */
+  function openImageViewer(
+    message: Message,
+    frame: BubbleFrame,
+    realSize?: {width: number; height: number},
+  ) {
+    const uri = message.imageUri;
+    if (!uri) {
+      return;
+    }
+    const base = {
+      uri,
+      frame,
+      title: message.isMine
+        ? 'Você'
+        : message.author?.name ?? chat?.name ?? '',
+      subtitle: message.time,
+      starred: message.starred,
+      message,
+    };
+    if (realSize) {
+      setImageTarget({
+        ...base,
+        imageWidth: realSize.width,
+        imageHeight: realSize.height,
+      });
+      return;
+    }
+    Image.getSize(
+      uri,
+      (imageWidth, imageHeight) =>
+        setImageTarget({...base, imageWidth, imageHeight}),
+      () =>
+        setImageTarget({
+          ...base,
+          imageWidth: frame.width,
+          imageHeight: frame.height,
+        }),
+    );
+  }
+
+  /** Baixar a foto aberta no visualizador pra galeria do aparelho. */
+  async function handleViewerDownload() {
+    if (!imageTarget) {
+      return;
+    }
+    try {
+      await CameraRoll.saveAsset(imageTarget.uri, {type: 'photo'});
+      toastService.show('Imagem salva na galeria.');
+    } catch {
+      toastService.show('Não foi possível salvar a imagem.', 'error');
+    }
+  }
+
+  /** Encaminhar a foto aberta — fecha o visualizador e vai pra seleção. */
+  function handleViewerForward() {
+    if (!imageTarget) {
+      return;
+    }
+    const {message} = imageTarget;
+    setImageTarget(null);
+    handleForward(message);
+  }
+
+  /** Favoritar/desfavoritar sem fechar o visualizador (estrela acompanha). */
+  function handleViewerToggleStar() {
+    if (!imageTarget) {
+      return;
+    }
+    toggleStar(chatId, imageTarget.message.id);
+    toastService.show(
+      imageTarget.starred
+        ? 'Mensagem removida das favoritas.'
+        : 'Mensagem favoritada.',
+    );
+    setImageTarget(
+      target => target && {...target, starred: !target.starred},
+    );
+  }
+
+  /** Responder a foto aberta — fecha o visualizador e abre a citação. */
+  function handleViewerReply() {
+    if (!imageTarget) {
+      return;
+    }
+    const {message} = imageTarget;
+    setImageTarget(null);
+    setReplyingTo(message);
+  }
+
+  /** Reagir à foto aberta com emoji (teclado do botão flutuante). */
+  function handleViewerReact(emoji: string) {
+    if (!imageTarget) {
+      return;
+    }
+    toggleReaction(chatId, imageTarget.message.id, emoji);
+  }
+
+  /** Apagar a foto aberta — confirma e fecha o visualizador. */
+  function handleViewerDelete() {
+    if (!imageTarget) {
+      return;
+    }
+    const {message} = imageTarget;
+    Alert.alert(
+      'Apagar mensagem',
+      'A mensagem será apagada. Essa ação não pode ser desfeita.',
+      [
+        {text: 'Cancelar', style: 'cancel'},
+        {
+          text: 'Apagar',
+          style: 'destructive',
+          onPress: () => {
+            setImageTarget(null);
+            deleteMessage(chatId, message.id);
+          },
+        },
+      ],
+    );
+  }
+
   function renderItem({item}: ListRenderItemInfo<Message>) {
     return (
       <MessageBubble
@@ -289,6 +422,8 @@ export function ChatScreen({
         onReactionPress={(message, emoji) =>
           toggleReaction(chatId, message.id, emoji)
         }
+        onImagePress={openImageViewer}
+        onForward={handleForward}
       />
     );
   }
@@ -394,6 +529,17 @@ export function ChatScreen({
         onToggleStar={handleToggleStar}
         onDelete={confirmDeleteMessage}
         onMore={handleActionSoon}
+      />
+
+      <ImageViewer
+        target={imageTarget}
+        onClose={() => setImageTarget(null)}
+        onDownload={handleViewerDownload}
+        onForward={handleViewerForward}
+        onToggleStar={handleViewerToggleStar}
+        onDelete={handleViewerDelete}
+        onReply={handleViewerReply}
+        onReact={handleViewerReact}
       />
     </Box>
   );

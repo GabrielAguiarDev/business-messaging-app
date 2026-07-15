@@ -39,6 +39,8 @@
 	<string></string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Precisamos do microfone para gravar mensagens de voz no chat.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Precisamos salvar na sua galeria as fotos que você baixar do chat.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Precisamos acessar suas fotos para você escolher uma imagem e enviar no chat.</string>
 	<key>RCTNewArchEnabled</key>
