@@ -33,8 +33,8 @@ import {ThemeColors} from '@theme';
 import {formatDuration} from '@utils';
 
 import {AttachmentSheet} from './AttachmentSheet';
+import {CameraCaptureSheet} from './CameraCaptureSheet';
 import {GalleryPickerSheet} from './GalleryPickerSheet';
-import {useCameraCapture} from './useCameraCapture';
 import {useVoiceRecorder} from './useVoiceRecorder';
 
 const KEYBOARD_GAP = 8;
@@ -55,7 +55,7 @@ interface ComposerProps {
   onChangeText: (text: string) => void;
   onSend: () => void;
   onSendAudio: (uri: string, durationSeconds: number) => void;
-  onSendImage: (uri: string) => void;
+  onSendImage: (uri: string, caption?: string) => void;
   /** Mensagem sendo respondida (swipe-to-reply) — mostra a barra de referência acima do input. */
   replyingTo?: MessageReply | null;
   onCancelReply?: () => void;
@@ -89,9 +89,10 @@ export function Composer({
   const [focused, setFocused] = useState(false);
   const [attachmentsVisible, setAttachmentsVisible] = useState(false);
   const [galleryVisible, setGalleryVisible] = useState(false);
+  /** Câmera própria do app aberta (vision-camera — sem a UI nativa do SO). */
+  const [cameraVisible, setCameraVisible] = useState(false);
   const recorder = useVoiceRecorder();
   const recording = recorder.state !== 'idle';
-  const captureFromCamera = useCameraCapture();
   /** Largura medida da caixa do input — usada p/ definir onde o arrasto cancela. */
   const boxWidth = useSharedValue(0);
 
@@ -132,12 +133,20 @@ export function Composer({
     setAttachmentsVisible(true);
   }
 
-  async function handleCamera() {
+  function handleCamera() {
     Keyboard.dismiss();
-    const uri = await captureFromCamera();
-    if (uri) {
-      onSendImage(uri);
-    }
+    setCameraVisible(true);
+  }
+
+  function handleSendPhoto(uri: string, caption: string) {
+    setCameraVisible(false);
+    onSendImage(uri, caption || undefined);
+  }
+
+  /** Botão de galeria dentro da câmera — fecha o modal dela e abre a grade. */
+  function handleCameraGallery() {
+    setCameraVisible(false);
+    openGallery();
   }
 
   function openGallery() {
@@ -338,6 +347,15 @@ export function Composer({
         visible={galleryVisible}
         onClose={() => setGalleryVisible(false)}
         onSelect={handleGallerySelect}
+      />
+
+      {/* Câmera própria → o preview da foto tirada (legenda + enviar) abre
+          como overlay DENTRO do modal dela */}
+      <CameraCaptureSheet
+        visible={cameraVisible}
+        onClose={() => setCameraVisible(false)}
+        onSendPhoto={handleSendPhoto}
+        onPickGallery={handleCameraGallery}
       />
     </Animated.View>
   );

@@ -133,7 +133,9 @@ export function ChatScreen({
         message.kind === 'audio'
           ? '🎤 Mensagem de voz'
           : message.kind === 'image'
-            ? '📷 Foto'
+            ? message.text
+              ? `📷 ${message.text}`
+              : '📷 Foto'
             : message.text,
       kind: message.kind,
     };
@@ -155,8 +157,8 @@ export function ChatScreen({
     setReplyingTo(null);
   }
 
-  function submitImageMessage(uri: string) {
-    sendMessage({chatId, image: {uri}, replyTo: replyRef});
+  function submitImageMessage(uri: string, caption?: string) {
+    sendMessage({chatId, image: {uri}, text: caption, replyTo: replyRef});
     setReplyingTo(null);
   }
 
@@ -265,6 +267,7 @@ export function ChatScreen({
    * - mensagem de outro usuário → referência ao autor dela.
    */
   function handleForward(message: Message) {
+    Keyboard.dismiss();
     setActionsTarget(null);
     const forward = message.forwardedFrom
       ? message.forwardedFrom
@@ -281,6 +284,7 @@ export function ChatScreen({
 
   /** Tap na citação de uma resposta → rola até a mensagem original. */
   function scrollToMessage(messageId: string) {
+    Keyboard.dismiss();
     const index = invertedMessages.findIndex(m => m.id === messageId);
     if (index < 0) {
       return;
@@ -303,6 +307,7 @@ export function ChatScreen({
     if (!uri) {
       return;
     }
+    Keyboard.dismiss();
     const base = {
       uri,
       frame,
@@ -421,9 +426,10 @@ export function ChatScreen({
         onReply={setReplyingTo}
         onQuotePress={scrollToMessage}
         onLongPress={openMessageActions}
-        onReactionPress={(message, emoji) =>
-          toggleReaction(chatId, message.id, emoji)
-        }
+        onReactionPress={(message, emoji) => {
+          Keyboard.dismiss();
+          toggleReaction(chatId, message.id, emoji);
+        }}
         onImagePress={openImageViewer}
         onForward={handleForward}
       />
@@ -498,6 +504,7 @@ export function ChatScreen({
               renderItem={renderItem}
               contentContainerStyle={$messagesContent}
               showsVerticalScrollIndicator={false}
+              keyboardDismissMode="on-drag"
               // scrollToIndex sem getItemLayout falha quando o alvo ainda não
               // foi medido (fora do render window) — aproxima via offset e o
               // FlatList tenta de novo sozinho na sequência

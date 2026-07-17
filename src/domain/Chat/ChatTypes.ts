@@ -144,10 +144,11 @@ export interface Message {
 
 export interface SendMessageParams {
   chatId: string;
+  /** Texto da mensagem — junto de `image`, vale como legenda da foto. */
   text?: string;
   /** Presente quando a mensagem é um áudio gravado (composer) em vez de texto. */
   audio?: {uri: string; duration: number};
-  /** Presente quando a mensagem é uma foto tirada na hora (composer/câmera) em vez de texto. */
+  /** Presente quando a mensagem é uma foto (câmera/galeria) — `text` opcional vira a legenda. */
   image?: {uri: string};
   /** Presente quando a mensagem responde outra (swipe-to-reply). */
   replyTo?: MessageReply;

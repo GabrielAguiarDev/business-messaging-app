@@ -64,15 +64,17 @@ async function sendMessage(
         audio_duration: params.audio.duration,
       }
     : params.image
-      ? {...base, kind: 'image', text: '', image_uri: params.image.uri}
+      ? {
+          ...base,
+          kind: 'image',
+          // foto pode carregar uma legenda (tela de preview do composer)
+          text: params.text?.trim() ?? '',
+          image_uri: params.image.uri,
+        }
       : {...base, kind: 'text', text: params.text ?? ''};
   mockDb.threads[chatId] = [...(mockDb.threads[chatId] ?? []), message];
 
-  const preview = params.audio
-    ? '🎤 Mensagem de voz'
-    : params.image
-      ? '📷 Foto'
-      : message.text;
+  const preview = previewOf(message);
   const chat = mockDb.chats.find(c => c.id === chatId);
   if (chat) {
     chat.last_message = preview;
@@ -101,7 +103,8 @@ function previewOf(message: MessageAPI): string {
     return '🎤 Mensagem de voz';
   }
   if (message.kind === 'image') {
-    return '📷 Foto';
+    // legenda entra no preview, como no WhatsApp ("📷 legenda")
+    return message.text ? `📷 ${message.text}` : '📷 Foto';
   }
   return message.text;
 }

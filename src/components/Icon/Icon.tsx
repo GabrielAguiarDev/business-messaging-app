@@ -16,10 +16,14 @@ export type IconName =
   | 'chevronUp'
   | 'close'
   | 'copy'
+  | 'crop'
   | 'doubleCheck'
   | 'dots'
   | 'download'
   | 'file'
+  | 'flash'
+  | 'flashOff'
+  | 'flipCamera'
   | 'forward'
   | 'headset'
   | 'image'
@@ -30,6 +34,7 @@ export type IconName =
   | 'newChat'
   | 'pause'
   | 'paperclip'
+  | 'pencil'
   | 'person'
   | 'pin'
   | 'play'
@@ -109,6 +114,71 @@ export function Icon({name, size = 24, color = 'text'}: IconProps) {
         stroke={c}
         strokeWidth={2.2}
         strokeLinecap="round"
+      />
+    ),
+    flash: (
+      <Path
+        d="M13 2.5 5 13.5h5l-1 8 8-11h-5l1-8z"
+        stroke={c}
+        strokeWidth={1.8}
+        strokeLinejoin="round"
+        fill="none"
+      />
+    ),
+    flashOff: (
+      <>
+        <Path
+          d="M13 2.5 5 13.5h5l-1 8 8-11h-5l1-8z"
+          stroke={c}
+          strokeWidth={1.8}
+          strokeLinejoin="round"
+          fill="none"
+        />
+        <Path d="M4 4l16 16" stroke={c} strokeWidth={1.8} strokeLinecap="round" />
+      </>
+    ),
+    flipCamera: (
+      <>
+        <Path
+          d="M19.5 9a8 8 0 00-14.2-1.5M4.5 15a8 8 0 0014.2 1.5"
+          stroke={c}
+          strokeWidth={1.9}
+          strokeLinecap="round"
+        />
+        <Path
+          d="M5.5 3v4.5H10M18.5 21v-4.5H14"
+          stroke={c}
+          strokeWidth={1.9}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </>
+    ),
+    crop: (
+      <>
+        <Path
+          d="M6.5 1.5v14a2 2 0 002 2h14"
+          stroke={c}
+          strokeWidth={1.9}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <Path
+          d="M1.5 6.5h14a2 2 0 012 2v14"
+          stroke={c}
+          strokeWidth={1.9}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </>
+    ),
+    pencil: (
+      <Path
+        d="M16.8 3.4a2.55 2.55 0 013.6 3.6L7.6 19.8 2.8 21.2l1.4-4.8L16.8 3.4z"
+        stroke={c}
+        strokeWidth={1.9}
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     ),
     image: (

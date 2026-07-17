@@ -2,6 +2,7 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 
 import {
   Image,
+  Keyboard,
   Pressable,
   TextStyle,
   View,
@@ -88,6 +89,27 @@ function ImageTimeOverlay({message}: {message: Message}) {
       )}
       {message.isMine && message.ticks === 'sent' && (
         <Icon name="check" size={13} color="primaryContrast" />
+      )}
+    </Box>
+  );
+}
+
+/** Footer padrão da bolha: estrela de favorita + hora + ticks (só nas minhas). */
+function BubbleFooter({message}: {message: Message}) {
+  return (
+    <Box
+      flexDirection="row"
+      alignItems="center"
+      justifyContent="flex-end"
+      gap="s2"
+      marginTop="s2">
+      {message.starred && <Icon name="star" size={11} color="textSecondary" />}
+      <Text variant="tiny">{message.time}</Text>
+      {message.isMine && message.ticks === 'read' && (
+        <Icon name="doubleCheck" size={13} color="primary" />
+      )}
+      {message.isMine && message.ticks === 'sent' && (
+        <Icon name="check" size={13} color="textTertiary" />
       )}
     </Box>
   );
@@ -323,6 +345,8 @@ export function MessageBubble({
 
   const {width: windowWidth} = useWindowDimensions();
   const isImage = message.kind === 'image';
+  /** Foto com legenda: texto abaixo da imagem + footer normal (sem overlay). */
+  const hasCaption = isImage && message.text.length > 0;
   const imageSize = useChatImageSize(
     isImage ? message.imageUri : undefined,
     windowWidth,
@@ -394,34 +418,26 @@ export function MessageBubble({
         </Box>
       )}
       {isImage ? (
-        <Box>
-          <MessageContent
-            message={message}
-            imageRef={imageRef}
-            imageSize={imageSize}
-          />
-          <ImageTimeOverlay message={message} />
-        </Box>
+        <>
+          <Box>
+            <MessageContent
+              message={message}
+              imageRef={imageRef}
+              imageSize={imageSize}
+            />
+            {!hasCaption && <ImageTimeOverlay message={message} />}
+          </Box>
+          {hasCaption && (
+            <Box paddingHorizontal="s6" paddingTop="s4" paddingBottom="s2">
+              <Text variant="paragraph">{message.text}</Text>
+              <BubbleFooter message={message} />
+            </Box>
+          )}
+        </>
       ) : (
         <>
           <MessageContent message={message} imageRef={imageRef} />
-          <Box
-            flexDirection="row"
-            alignItems="center"
-            justifyContent="flex-end"
-            gap="s2"
-            marginTop="s2">
-            {message.starred && (
-              <Icon name="star" size={11} color="textSecondary" />
-            )}
-            <Text variant="tiny">{message.time}</Text>
-            {message.ticks === 'read' && (
-              <Icon name="doubleCheck" size={13} color="primary" />
-            )}
-            {message.ticks === 'sent' && (
-              <Icon name="check" size={13} color="textTertiary" />
-            )}
-          </Box>
+          <BubbleFooter message={message} />
         </>
       )}
     </Box>
@@ -464,28 +480,26 @@ export function MessageBubble({
         </Box>
       )}
       {isImage ? (
-        <Box>
-          <MessageContent
-            message={message}
-            imageRef={imageRef}
-            imageSize={imageSize}
-          />
-          <ImageTimeOverlay message={message} />
-        </Box>
+        <>
+          <Box>
+            <MessageContent
+              message={message}
+              imageRef={imageRef}
+              imageSize={imageSize}
+            />
+            {!hasCaption && <ImageTimeOverlay message={message} />}
+          </Box>
+          {hasCaption && (
+            <Box paddingHorizontal="s6" paddingTop="s4" paddingBottom="s2">
+              <Text variant="paragraph">{message.text}</Text>
+              <BubbleFooter message={message} />
+            </Box>
+          )}
+        </>
       ) : (
         <>
           <MessageContent message={message} imageRef={imageRef} />
-          <Box
-            flexDirection="row"
-            alignItems="center"
-            justifyContent="flex-end"
-            gap="s2"
-            marginTop="s2">
-            {message.starred && (
-              <Icon name="star" size={11} color="textSecondary" />
-            )}
-            <Text variant="tiny">{message.time}</Text>
-          </Box>
+          <BubbleFooter message={message} />
         </>
       )}
     </Box>
@@ -504,7 +518,9 @@ export function MessageBubble({
     onLongPress || isImageTappable ? (
       <Pressable
         ref={pressableRef}
-        onPress={isImageTappable ? handlePress : undefined}
+        // o Pressable captura o toque (long-press), então o tap na bolha não
+        // chega ao gesto da lista — fecha o teclado aqui também
+        onPress={isImageTappable ? handlePress : Keyboard.dismiss}
         onLongPress={onLongPress ? handleLongPress : undefined}
         delayLongPress={300}>
         {withReactions}

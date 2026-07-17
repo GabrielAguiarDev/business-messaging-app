@@ -50,6 +50,18 @@ jest.mock('react-native-nitro-sound', () => ({
   },
 }));
 
+jest.mock('react-native-vision-camera', () => {
+  const {View} = require('react-native');
+  return {
+    Camera: View,
+    useCameraDevice: () => null,
+    useCameraPermission: () => ({
+      hasPermission: true,
+      requestPermission: jest.fn(async () => true),
+    }),
+  };
+});
+
 jest.mock('@react-native-community/blur', () => {
   const {View} = require('react-native');
   return {BlurView: View};

@@ -53,7 +53,8 @@ function toSendParams(
           },
         }
       : message.kind === 'image'
-        ? {image: {uri: message.imageUri ?? ''}}
+        ? // legenda (se houver) viaja junto com a foto encaminhada
+          {image: {uri: message.imageUri ?? ''}, text: message.text}
         : {text: message.text};
   return {chatId, forward, ...content};
 }

@@ -94,10 +94,11 @@ function lerp(p: number, a: number, b: number) {
 }
 
 /**
- * Botão "liquid glass" do viewer (iOS 26+; fallback chip escuro) — círculo
- * ou pill conforme o borderRadius/conteúdo.
+ * Botão "liquid glass" pro chrome sobre mídia (iOS 26+; fallback chip
+ * escuro) — círculo ou pill conforme o borderRadius/conteúdo. Usado aqui
+ * e na tela de preview da foto antes do envio (PhotoPreviewSheet).
  */
-function GlassButton({
+export function GlassButton({
   onPress,
   borderRadius,
   style,
