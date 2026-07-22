@@ -1,4 +1,4 @@
-# yMessage
+# Business Messaging
 
 **Central de Mensagens Corporativas** — app mobile de mensageria para equipes de empresas (estilo "WhatsApp corporativo"), construído em React Native.
 
@@ -146,7 +146,7 @@ yarn install
 Na raiz do projeto:
 
 ```sh
-API_URL=https://api.ymessage.mock/v1
+API_URL=https://api.message.mock/v1
 ```
 
 Ver [Variáveis de ambiente](#variáveis-de-ambiente).
