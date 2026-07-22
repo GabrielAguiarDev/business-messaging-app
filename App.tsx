@@ -9,6 +9,7 @@ import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 
 import {Toast} from '@components';
+import {CameraHost} from '@components/CameraHost/CameraHost';
 import {Routes} from '@routes';
 import {AuthCredentialsProvider, useResolvedTheme} from '@services';
 import {darkTheme, theme} from '@theme';
@@ -39,6 +40,7 @@ function App() {
                 />
                 <Routes />
                 <Toast />
+                <CameraHost />
               </BottomSheetModalProvider>
             </ThemeProvider>
           </SafeAreaProvider>

@@ -18,13 +18,12 @@ import {
 } from '@components';
 import {useAuthUpdateProfile} from '@domain';
 import {AppStackScreenProps} from '@routes';
-import {toastService, useAuthCredentials} from '@services';
+import {cameraService, toastService, useAuthCredentials} from '@services';
 
 import {
   ImageViewer,
   ImageViewerTarget,
 } from '../Chat/components/ImageViewer';
-import {useCameraCapture} from '../Chat/components/useCameraCapture';
 
 const AVATAR_SIZE = 96;
 
@@ -48,7 +47,6 @@ export function EditProfileScreen({
   );
 
   const avatarRef = useRef<View>(null);
-  const captureFromCamera = useCameraCapture();
 
   const {updateProfile, isLoading} = useAuthUpdateProfile({
     onSuccess: async updatedUser => {
@@ -68,9 +66,14 @@ export function EditProfileScreen({
 
   async function handleTakePhoto() {
     setSheetOpen(false);
-    const uri = await captureFromCamera();
-    if (uri) {
-      setAvatarUrl(uri);
+    // câmera global (mesma do chat), porém p/ avatar: só corte, sem legenda
+    const result = await cameraService.open({
+      showCaption: false,
+      editors: ['crop'],
+      confirmIcon: 'check',
+    });
+    if (result?.type === 'photo') {
+      setAvatarUrl(result.uri);
     }
   }
 

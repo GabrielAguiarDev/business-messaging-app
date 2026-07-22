@@ -28,12 +28,11 @@ import {scheduleOnRN} from 'react-native-worklets';
 import {Box, Icon, IconName, Text, TouchableOpacityBox} from '@components';
 import {MessageReply} from '@domain';
 import {useAppTheme} from '@hooks';
-import {toastService} from '@services';
+import {cameraService, toastService} from '@services';
 import {ThemeColors} from '@theme';
 import {formatDuration} from '@utils';
 
 import {AttachmentSheet} from './AttachmentSheet';
-import {CameraCaptureSheet} from './CameraCaptureSheet';
 import {GalleryPickerSheet} from './GalleryPickerSheet';
 import {useVoiceRecorder} from './useVoiceRecorder';
 
@@ -89,8 +88,6 @@ export function Composer({
   const [focused, setFocused] = useState(false);
   const [attachmentsVisible, setAttachmentsVisible] = useState(false);
   const [galleryVisible, setGalleryVisible] = useState(false);
-  /** Câmera própria do app aberta (vision-camera — sem a UI nativa do SO). */
-  const [cameraVisible, setCameraVisible] = useState(false);
   const recorder = useVoiceRecorder();
   const recording = recorder.state !== 'idle';
   /** Largura medida da caixa do input — usada p/ definir onde o arrasto cancela. */
@@ -133,20 +130,22 @@ export function Composer({
     setAttachmentsVisible(true);
   }
 
-  function handleCamera() {
+  /** Abre a câmera GLOBAL do app; o botão de galeria dela devolve 'gallery'. */
+  async function handleCamera() {
     Keyboard.dismiss();
-    setCameraVisible(true);
-  }
-
-  function handleSendPhoto(uri: string, caption: string) {
-    setCameraVisible(false);
-    onSendImage(uri, caption || undefined);
-  }
-
-  /** Botão de galeria dentro da câmera — fecha o modal dela e abre a grade. */
-  function handleCameraGallery() {
-    setCameraVisible(false);
-    openGallery();
+    const result = await cameraService.open({
+      showCaption: true,
+      editors: ['crop', 'text', 'draw'],
+      allowGallery: true,
+    });
+    if (!result) {
+      return;
+    }
+    if (result.type === 'gallery') {
+      openGallery();
+      return;
+    }
+    onSendImage(result.uri, result.caption || undefined);
   }
 
   function openGallery() {
@@ -158,9 +157,20 @@ export function Composer({
     setTimeout(() => setGalleryVisible(true), 300);
   }
 
+  /** Foto escolhida (galeria/recentes) → abre o preview/edição antes de enviar. */
+  async function handlePickedImage(uri: string) {
+    const result = await cameraService.openPreview(uri, {
+      showCaption: true,
+      editors: ['crop', 'text', 'draw'],
+    });
+    if (result?.type === 'photo') {
+      onSendImage(result.uri, result.caption || undefined);
+    }
+  }
+
   function handleGallerySelect(uri: string) {
     setGalleryVisible(false);
-    onSendImage(uri);
+    handlePickedImage(uri);
   }
 
   async function handleDiscardLocked() {
@@ -351,21 +361,13 @@ export function Composer({
         onClose={() => setAttachmentsVisible(false)}
         onCamera={handleCamera}
         onPickImage={openGallery}
+        onSelectImage={handlePickedImage}
       />
 
       <GalleryPickerSheet
         visible={galleryVisible}
         onClose={() => setGalleryVisible(false)}
         onSelect={handleGallerySelect}
-      />
-
-      {/* Câmera própria → o preview da foto tirada (legenda + enviar) abre
-          como overlay DENTRO do modal dela */}
-      <CameraCaptureSheet
-        visible={cameraVisible}
-        onClose={() => setCameraVisible(false)}
-        onSendPhoto={handleSendPhoto}
-        onPickGallery={handleCameraGallery}
       />
     </Animated.View>
   );

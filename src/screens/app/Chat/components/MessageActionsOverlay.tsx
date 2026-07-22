@@ -72,7 +72,6 @@ export function MessageActionsOverlay({
   onCopy,
   onToggleStar,
   onDelete,
-  onMore,
 }: MessageActionsOverlayProps) {
   const {height: windowHeight} = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -234,12 +233,6 @@ export function MessageActionsOverlay({
       label: 'Apagar',
       danger: true,
       onPress: () => onDelete(message),
-    },
-    {
-      icon: 'dots',
-      label: 'Mais...',
-      separated: true,
-      onPress: () => onMore(message),
     },
   ];
 

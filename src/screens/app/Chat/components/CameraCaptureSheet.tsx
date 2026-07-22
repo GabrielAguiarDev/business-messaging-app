@@ -10,7 +10,7 @@ import {
 } from 'react-native-vision-camera';
 
 import {Box, Icon, Text, TouchableOpacityBox} from '@components';
-import {toastService} from '@services';
+import {CameraOpenOptions, toastService} from '@services';
 
 import {GlassButton} from './ImageViewer';
 import {PhotoPreview} from './PhotoPreview';
@@ -22,6 +22,8 @@ interface CameraCaptureSheetProps {
   onSendPhoto: (uri: string, caption: string) => void;
   /** Botão de galeria (canto inferior esquerdo) — fecha a câmera e abre a grade. */
   onPickGallery?: () => void;
+  /** Config de legenda/ferramentas de edição/ícone de confirmar do preview. */
+  options?: CameraOpenOptions;
 }
 
 /**
@@ -41,6 +43,7 @@ export function CameraCaptureSheet({
   onClose,
   onSendPhoto,
   onPickGallery,
+  options,
 }: CameraCaptureSheetProps) {
   const insets = useSafeAreaInsets();
   const cameraRef = useRef<Camera>(null);
@@ -239,6 +242,9 @@ export function CameraCaptureSheet({
             uri={capturedUri}
             onClose={() => setCapturedUri(null)}
             onSend={handleSendPhoto}
+            showCaption={options?.showCaption ?? true}
+            editors={options?.editors ?? ['crop', 'text', 'draw']}
+            confirmIcon={options?.confirmIcon ?? 'send'}
           />
         )}
       </View>

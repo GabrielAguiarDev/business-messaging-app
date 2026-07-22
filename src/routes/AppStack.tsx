@@ -96,6 +96,10 @@ function AppTabs() {
         options={{
           title: 'Config',
           tabBarIcon: { type: 'sfSymbol', name: 'gearshape' },
+          // Config não tem badge, mas a aparência da tela EM FOCO define a cor
+          // dos badges da barra inteira no iOS — sem isto, ao abrir Config os
+          // badges das outras abas caem na cor default (vermelho).
+          tabBarBadgeStyle: badgeStyle,
         }}
       />
     </Tab.Navigator>
