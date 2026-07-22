@@ -177,6 +177,12 @@ export function Composer({
   const $input: TextStyle = {
     color: colors.text,
     fontSize: 15,
+    // lineHeight + minHeight fixam a altura de UMA linha: sem isso o TextInput
+    // multiline reporta altura menor quando vazio (só placeholder) e "pula" um
+    // par de px ao digitar o 1º caractere. minHeight = lineHeight → vazio e
+    // uma linha ficam idênticos; a partir de 2 linhas cresce normalmente.
+    lineHeight: 20,
+    minHeight: 20,
     padding: 0,
     maxHeight: 96,
     opacity: recording ? 0 : 1,
@@ -281,6 +287,10 @@ export function Composer({
               onPress={onSend}
               backgroundColor="primary"
               iconColor="primaryContrast"
+              // mesmo tamanho do RecordButton (36) — senão a linha muda de
+              // altura ao trocar mic ⭤ enviar
+              size={36}
+              iconSize={18}
             />
           ) : (
             <RecordButton
@@ -636,24 +646,28 @@ function ComposerCircle({
   subtle = false,
   backgroundColor,
   iconColor,
+  size = 32,
+  iconSize = 17,
 }: {
   icon: IconName;
   onPress: () => void;
   subtle?: boolean;
   backgroundColor?: keyof ThemeColors;
   iconColor?: keyof ThemeColors;
+  size?: number;
+  iconSize?: number;
 }) {
   return (
     <TouchableOpacityBox
       onPress={onPress}
       activeOpacity={0.75}
-      width={32}
-      height={32}
+      width={size}
+      height={size}
       borderRadius="full"
       backgroundColor={backgroundColor ?? (subtle ? 'surface' : 'chip')}
       alignItems="center"
       justifyContent="center">
-      <Icon name={icon} size={17} color={iconColor ?? 'textSecondary'} />
+      <Icon name={icon} size={iconSize} color={iconColor ?? 'textSecondary'} />
     </TouchableOpacityBox>
   );
 }

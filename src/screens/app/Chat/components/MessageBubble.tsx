@@ -17,6 +17,7 @@ import Animated, {
   interpolate,
   useAnimatedStyle,
   useSharedValue,
+  withSpring,
   withTiming,
 } from 'react-native-reanimated';
 import {scheduleOnRN} from 'react-native-worklets';
@@ -31,6 +32,36 @@ import {VoiceMessageBubble} from './VoiceMessageBubble';
 const REPLY_TRIGGER = 52;
 /** Depois daqui o arrasto ganha resistência — a bolha não acompanha o dedo 1:1. */
 const MAX_DRAG = 72;
+
+/**
+ * Animação de ENTRADA da bolha (mensagem enviada/recebida "aparecendo"):
+ * fade + leve escala. Só opacity/scale — nada de translateY — porque a lista
+ * é `inverted` (scaleY:-1) e um deslocamento vertical entraria invertido.
+ * Aplicada apenas em mensagens novas (guarda de id na ChatScreen), nunca ao
+ * rolar/reciclar bolhas antigas.
+ */
+function bubbleEntering() {
+  'worklet';
+  return {
+    initialValues: {opacity: 0, transform: [{scale: 0.9}]},
+    animations: {
+      opacity: withTiming(1, {duration: 180}),
+      transform: [{scale: withSpring(1, {damping: 15, stiffness: 220, mass: 0.6})}],
+    },
+  };
+}
+
+/** Animação de SAÍDA da bolha (mensagem apagada "sumindo"): fade + encolher. */
+function bubbleExiting() {
+  'worklet';
+  return {
+    initialValues: {opacity: 1, transform: [{scale: 1}]},
+    animations: {
+      opacity: withTiming(0, {duration: 160}),
+      transform: [{scale: withTiming(0.85, {duration: 160})}],
+    },
+  };
+}
 
 /** Posição da bolha em coordenadas de janela, medida no long-press. */
 export interface BubbleFrame {
@@ -62,6 +93,12 @@ interface MessageBubbleProps {
   ) => void;
   /** Habilita o botão flutuante de encaminhamento rápido em mídias. */
   onForward?: (message: Message) => void;
+  /**
+   * true quando a mensagem acabou de chegar (enviada/recebida) — dispara a
+   * animação de entrada. Falso/omitido para as já existentes (carga inicial,
+   * bolhas recicladas ao rolar) para não reanimarem.
+   */
+  animateEntrance?: boolean;
 }
 
 /** Horário + ticks sobrepostos ao canto inferior direito da imagem (WhatsApp). */
@@ -337,6 +374,7 @@ export function MessageBubble({
   onReactionPress,
   onImagePress,
   onForward,
+  animateEntrance,
 }: MessageBubbleProps) {
   const pressableRef = useRef<View>(null);
   const imageRef = useRef<View>(null);
@@ -379,17 +417,21 @@ export function MessageBubble({
 
   if (message.kind === 'system') {
     return (
-      <Box
-        alignSelf="center"
-        backgroundColor="primaryTint"
-        borderRadius="br10"
-        paddingHorizontal="s12"
-        paddingVertical="s4"
-        marginVertical="s4">
-        <Text variant="captionSmall" textAlign="center">
-          {message.text}
-        </Text>
-      </Box>
+      <Animated.View
+        entering={animateEntrance ? bubbleEntering : undefined}
+        exiting={bubbleExiting}>
+        <Box
+          alignSelf="center"
+          backgroundColor="primaryTint"
+          borderRadius="br10"
+          paddingHorizontal="s12"
+          paddingVertical="s4"
+          marginVertical="s4">
+          <Text variant="captionSmall" textAlign="center">
+            {message.text}
+          </Text>
+        </Box>
+      </Animated.View>
     );
   }
 
@@ -552,17 +594,28 @@ export function MessageBubble({
       pressable
     );
 
-  if (!onReply) {
-    return content;
-  }
-
-  return (
+  const node = onReply ? (
     <SwipeToReplyRow
       message={message}
       onReply={onReply}
       isSwipingRef={isSwipingRef}>
       {content}
     </SwipeToReplyRow>
+  ) : (
+    content
+  );
+
+  // Envolve tudo (inclusive o gesto de swipe) para animar entrada/saída da
+  // bolha sem interferir nos gestos internos. `transformOrigin` ancora a escala
+  // no lado da bolha: as minhas (direita) crescem da direita p/ a esquerda, as
+  // do outro (esquerda) crescem da esquerda p/ a direita — direcional e sutil.
+  return (
+    <Animated.View
+      entering={animateEntrance ? bubbleEntering : undefined}
+      exiting={bubbleExiting}
+      style={message.isMine ? $originRight : $originLeft}>
+      {node}
+    </Animated.View>
   );
 }
 
@@ -679,6 +732,12 @@ function SwipeToReplyRow({
     </GestureDetector>
   );
 }
+
+// ancora a escala da animação de entrada/saída no lado da bolha (transformOrigin
+// horizontal; o vertical fica no centro, sutil). Não afetado pelo scaleY:-1 da
+// lista inverted, que inverte só o eixo Y.
+const $originRight: ViewStyle = {transformOrigin: 'right center'};
+const $originLeft: ViewStyle = {transformOrigin: 'left center'};
 
 const $shadowOffset = {width: 0, height: 1};
 

@@ -3,6 +3,7 @@ import React from 'react';
 import { createNativeBottomTabNavigator } from '@react-navigation/bottom-tabs/unstable';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import { useChannelList, useChatList, useModuleList } from '@domain';
 import { useAppTheme } from '@hooks';
 import {
   AttendanceQueueScreen,
@@ -26,6 +27,35 @@ const Tab = createNativeBottomTabNavigator<AppTabParamList>();
 const Stack = createNativeStackNavigator<AppStackParamList>();
 
 function AppTabs() {
+  // Badge da aba Chats: soma das mensagens não lidas das conversas não
+  // silenciadas (silenciadas não entram na contagem, como no WhatsApp).
+  // O react-query reavalia ao enviar/receber/marcar lida → o badge é reativo.
+  const { colors } = useAppTheme();
+  const { chats } = useChatList();
+  const { modules } = useModuleList();
+  const { channels } = useChannelList();
+
+  // Badge de cada aba = soma das não lidas do respectivo domínio. Todos os
+  // hooks são react-query → os badges reagem a enviar/receber/marcar lida/assumir.
+  const chatsUnread = chats.reduce(
+    (total, chat) => (chat.muted ? total : total + chat.unreadCount),
+    0,
+  );
+  const modulesUnread = modules.reduce(
+    (total, module) => total + module.unreadCount,
+    0,
+  );
+  // Atendimento: total aguardando nas filas dos canais (badge laranja da lista).
+  const attendanceWaiting = channels.reduce(
+    (total, channel) => total + channel.waitingCount,
+    0,
+  );
+
+  // cor do badge fixa na primária em qualquer estado (ver AppDelegate p/ o
+  // estado "selecionado" no iOS, que o react-navigation não customiza)
+  const badgeStyle = { backgroundColor: colors.primary };
+  const badgeFor = (count: number) => (count > 0 ? count : undefined);
+
   return (
     <Tab.Navigator
       initialRouteName="ChatsTab"
@@ -36,6 +66,8 @@ function AppTabs() {
         options={{
           title: 'Módulos',
           tabBarIcon: { type: 'sfSymbol', name: 'person.2' },
+          tabBarBadge: badgeFor(modulesUnread),
+          tabBarBadgeStyle: badgeStyle,
         }}
       />
       <Tab.Screen
@@ -44,6 +76,8 @@ function AppTabs() {
         options={{
           title: 'Atend.',
           tabBarIcon: { type: 'sfSymbol', name: 'headphones' },
+          tabBarBadge: badgeFor(attendanceWaiting),
+          tabBarBadgeStyle: badgeStyle,
         }}
       />
       <Tab.Screen
@@ -52,6 +86,8 @@ function AppTabs() {
         options={{
           title: 'Chats',
           tabBarIcon: { type: 'sfSymbol', name: 'message' },
+          tabBarBadge: badgeFor(chatsUnread),
+          tabBarBadgeStyle: badgeStyle,
         }}
       />
       <Tab.Screen

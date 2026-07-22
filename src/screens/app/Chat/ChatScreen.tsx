@@ -1,4 +1,4 @@
-import React, {useMemo, useRef, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 
 import {
   Alert,
@@ -114,6 +114,27 @@ export function ChatScreen({
   }
 
   const invertedMessages = useMemo(() => [...messages].reverse(), [messages]);
+
+  // Anima a entrada só das mensagens que ACABARAM de chegar (enviadas/recebidas),
+  // nunca as da carga inicial nem as recicladas pela FlatList ao rolar. Guardamos
+  // os ids já vistos num ref; um id ausente dele (fora da 1ª carga) é "novo".
+  const knownMessageIdsRef = useRef<Set<string>>(new Set());
+  const isFirstMessagesLoadRef = useRef(true);
+  const newMessageIds = useMemo(() => {
+    const ids = new Set<string>();
+    if (!isFirstMessagesLoadRef.current) {
+      for (const message of messages) {
+        if (!knownMessageIdsRef.current.has(message.id)) {
+          ids.add(message.id);
+        }
+      }
+    }
+    return ids;
+  }, [messages]);
+  useEffect(() => {
+    messages.forEach(message => knownMessageIdsRef.current.add(message.id));
+    isFirstMessagesLoadRef.current = false;
+  }, [messages]);
 
   // tap na área de mensagens desfoca o input (composer volta ao compacto);
   // arrastar cancela o tap, então o scroll não é afetado
@@ -423,6 +444,7 @@ export function ChatScreen({
     return (
       <MessageBubble
         message={item}
+        animateEntrance={newMessageIds.has(item.id)}
         onReply={setReplyingTo}
         onQuotePress={scrollToMessage}
         onLongPress={openMessageActions}

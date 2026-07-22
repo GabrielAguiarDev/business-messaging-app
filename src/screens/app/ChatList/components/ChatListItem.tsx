@@ -114,7 +114,7 @@ export function ChatListItem({
           alignItems="center"
           gap="s12"
           paddingHorizontal="s16"
-          paddingTop="s10">
+          paddingTop="s14">
         <Avatar
           label={chat.initials}
           color={chat.avatarColor}
@@ -126,7 +126,7 @@ export function ChatListItem({
           flex={1}
           borderBottomWidth={1}
           borderColor="separator"
-          paddingBottom="s12">
+          paddingBottom="s16">
           <Box flexDirection="row" alignItems="center" gap="s6">
             <Text variant="itemTitle" numberOfLines={1} flexShrink={1}>
               {chat.name}
