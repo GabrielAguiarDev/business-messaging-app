@@ -12,6 +12,9 @@ import {AuthCredentials} from '@domain';
 import {authCredentialsStorage} from './authCredentialsStorage';
 import {AuthCredentialsService} from './authCredentialsTypes';
 
+/** DEBUG: ms para segurar o SplashScreen em dev e conseguir vê-lo. Use 0 para desligar. */
+const SPLASH_DEBUG_DELAY_MS = 2000;
+
 const AuthCredentialsContext = createContext<AuthCredentialsService>({
   authCredentials: null,
   isLoading: true,
@@ -34,6 +37,11 @@ export function AuthCredentialsProvider({
     if (credentials) {
       api.defaults.headers.common.Authorization = `Bearer ${credentials.token}`;
       setAuthCredentials(credentials);
+    }
+    // DEBUG: segura o splash em dev para conseguir visualizá-lo (0 = desligado).
+    if (__DEV__ && SPLASH_DEBUG_DELAY_MS > 0) {
+      const timer = setTimeout(() => setIsLoading(false), SPLASH_DEBUG_DELAY_MS);
+      return () => clearTimeout(timer);
     }
     setIsLoading(false);
   }, []);

@@ -35,13 +35,15 @@ export function Routes() {
     },
   };
 
-  if (isLoading) {
-    return <SplashScreen />;
-  }
-
   return (
-    <NavigationContainer theme={navigationTheme}>
-      {authCredentials ? <AppStack /> : <AuthStack />}
-    </NavigationContainer>
+    <>
+      {!isLoading && (
+        <NavigationContainer theme={navigationTheme}>
+          {authCredentials ? <AppStack /> : <AuthStack />}
+        </NavigationContainer>
+      )}
+      {/* Overlay: cobre a tela enquanto carrega e some com fade out ao terminar */}
+      <SplashScreen hidden={!isLoading} />
+    </>
   );
 }

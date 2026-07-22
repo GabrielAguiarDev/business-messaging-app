@@ -20,6 +20,7 @@
     "@react-navigation/bottom-tabs": "^7.18.8",
     "@react-navigation/native": "^7.3.8",
     "@react-navigation/native-stack": "^7.17.10",
+    "@rive-app/react-native": "^0.4.19",
     "@shopify/restyle": "^2.4.5",
     "@tanstack/react-query": "^5.101.2",
     "axios": "^1.18.1",

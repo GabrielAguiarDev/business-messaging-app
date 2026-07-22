@@ -2584,6 +2584,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rive-app/react-native@npm:^0.4.19":
+  version: 0.4.19
+  resolution: "@rive-app/react-native@npm:0.4.19"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+    react-native-nitro-modules: ">=0.35.10 <0.36"
+  checksum: 10c0/495dfb31d53d4cc2d2827d5e115b679d797c1c1c5869182254881625b3d4169b4354d5044d9877411bd61b40b1e22448aa339016f9fa34336ad5a24143a60054
+  languageName: node
+  linkType: hard
+
 "@rtsao/scc@npm:^1.1.0":
   version: 1.1.0
   resolution: "@rtsao/scc@npm:1.1.0"
@@ -9766,6 +9777,7 @@ __metadata:
     "@react-navigation/bottom-tabs": "npm:^7.18.8"
     "@react-navigation/native": "npm:^7.3.8"
     "@react-navigation/native-stack": "npm:^7.17.10"
+    "@rive-app/react-native": "npm:^0.4.19"
     "@shopify/restyle": "npm:^2.4.5"
     "@tanstack/react-query": "npm:^5.101.2"
     "@types/jest": "npm:^29.5.13"
